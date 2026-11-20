@@ -1,0 +1,72 @@
+{{define "approval"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>{{$d.A.ID}} · {{$d.Reserved.Title}}</h1>
+  <span class="crumb"><a href="/work">← your work</a></span></div>
+<main id="main">
+<div class="row">
+  <div class="card" style="flex:1.2">
+    <div class="hd"><h2>Fact sheet</h2><span class="note">assembled by code from typed facts; every line names its source</span></div>
+    <div class="bd" style="padding:0">
+      <table class="t facts">
+        {{range $d.A.Facts}}<tr><td>{{.Label}}</td><td><b>{{.Value}}</b><div class="note">{{.Source}}</div></td></tr>{{end}}
+      </table>
+    </div>
+  </div>
+
+  <div style="flex:1" class="stack">
+    <div class="bound card">
+      <div class="hd">What your signature binds — exactly this, nothing else</div>
+      <div class="bd" style="padding:0">
+        <table class="t facts">
+          {{range $d.Args}}<tr><td>{{.K}}</td><td><b>{{.V}}</b></td></tr>{{end}}
+          <tr><td>request hash</td><td><span class="hash" title="{{$d.Hash}}">{{short $d.Hash}}…</span>
+            <div class="note">change one rupee and this hash changes; the dispatcher re-checks it before anything leaves</div></td></tr>
+        </table>
+      </div>
+    </div>
+
+    {{if eq $d.A.Status "open"}}
+    <div class="card"><div class="bd">
+      <form method="post" action="/approvals/{{$d.A.ID}}/decide" class="stack" style="gap:12px">
+        {{if $d.Editable}}
+        <div class="row" style="gap:12px">
+          <label class="f" style="flex:1">Release date (your decision; may differ from the request)
+            <input type="date" name="last_working_day" value="{{range $d.Args}}{{if eq .K "last working day"}}{{.V}}{{end}}{{end}}">
+          </label>
+          <label class="f">Notice buyout
+            <span><input type="hidden" name="edit_buyout" value="1">
+            <input type="checkbox" name="notice_buyout" {{range $d.Args}}{{if eq .K "notice buyout"}}{{if eq .V "true"}}checked{{end}}{{end}}{{end}}> agreed</span>
+          </label>
+        </div>
+        <div class="note">Editing a field changes the request hash — you approve what you see, not what was asked.</div>
+        {{end}}
+        <div class="row" style="gap:12px;align-items:flex-end">
+          <label class="f">Re-authenticate to sign (demo IdP: your PIN)
+            <input type="password" name="pin" placeholder="PIN" autocomplete="off" style="width:120px">
+            <span class="note">demo PIN for {{.User.Name}}: <b class="mono">{{.User.PIN}}</b> — stands in
+            for your identity provider's re-login; the nonce it would carry is the request hash above</span>
+          </label>
+          <label class="f" style="flex:1">Reason (required to reject)
+            <input type="text" name="reason" placeholder="optional for approve">
+          </label>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn amber" name="decision" value="approve">Approve — sign exactly this</button>
+          <button class="btn ghost" name="decision" value="reject">Reject</button>
+        </div>
+        <div class="note">Approving mints a single-use mandate bound to the hash above, valid 45 minutes.
+        A chat message can never mint one. Silence escalates; it never approves.</div>
+      </form>
+    </div></div>
+    {{else}}
+    <div class="card"><div class="bd">
+      <span class="pill {{if eq $d.A.Status "granted"}}p-done{{else}}p-in_doubt{{end}}">{{$d.A.Status}}</span>
+      <span class="note">decided {{timefmt $d.A.Decided}}{{if $d.A.Reason}} · {{$d.A.Reason}}{{end}}</span>
+      <div class="note" style="margin-top:8px">The mandate (if granted) is on the case's receipts: action <span class="mono">mandate.issued</span>.</div>
+      <div style="margin-top:10px"><a class="btn sm ghost" href="/cases/{{$d.A.CaseID}}">Open the case</a></div>
+    </div></div>
+    {{end}}
+  </div>
+</div>
+</main>
+{{template "foot" .}}{{end}}

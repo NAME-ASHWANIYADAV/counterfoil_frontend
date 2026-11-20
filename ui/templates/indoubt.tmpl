@@ -1,0 +1,78 @@
+{{define "indoubt"}}{{template "head" .}}
+<div class="topbar"><h1>In doubt</h1>
+  <span class="crumb">when the outcome cannot be established, a named person looks at the target system — nothing is retried blindly</span></div>
+<main id="main" data-live="1">{{template "indoubt-main" .}}</main>
+{{template "foot" .}}{{end}}
+
+{{define "indoubt-main"}}
+{{$d := .Data}}
+<div class="stack">
+  <div class="statstrip">
+    <div class="sitem {{if $d.Open}}warn{{end}}"><div class="v">{{len $d.Open}}</div><div class="k">open — each with a named owner</div></div>
+    <div class="sitem"><div class="v">{{if $d.Oldest}}{{$d.Oldest}}{{else}}—{{end}}</div><div class="k">oldest open item's age</div></div>
+    <div class="sitem"><div class="v">{{len $d.Closed}}</div><div class="k">resolved, receipted</div></div>
+    <div class="sitem wide"><div class="v" style="font-size:15px">never retried blindly</div><div class="k">a contradiction goes to a person; only a person orders a re-dispatch</div></div>
+  </div>
+  <div class="card tight">
+    <div class="hd"><h2>Open items</h2></div>
+    <table class="t">
+      <tr><th style="width:170px">Item</th><th>What the verifier saw</th><th style="width:360px">Resolve (you are accountable; receipted)</th></tr>
+      {{range $d.Open}}
+      <tr>
+        <td><b>{{.ID}}</b><div class="note">case <a href="/cases/{{.CaseID}}">{{.CaseID}}</a> · step {{.StepID}}</div>
+          <div class="note">owner: {{.OwnerRole}} · {{timefmt .Created}}</div></td>
+        <td class="note">{{.Reason}}
+          {{if .IntentKey}}<div>intent <span class="hash">{{short .IntentKey}}</span></div>{{end}}
+          <div style="margin-top:6px">Look at the target's own records first: <a href="http://localhost:7072/" target="_blank">open the stand-in systems ↗</a></div>
+          {{if $d.HasAI}}
+          <form method="post" action="/indoubt/{{.ID}}/draft" style="margin-top:8px">
+            <button class="btn sm ghost" data-slow="Drafting — reading the target…">{{if index $d.Drafts .ID}}Draft again{{else}}Draft investigation summary{{end}} · model</button>
+          </form>
+          {{with index $d.Drafts .ID}}
+          <div class="draft">
+            {{if .Err}}
+              <div><b>Draft failed.</b> {{.Err}}</div>
+            {{else}}
+              <div><b>Model draft</b> · {{.Model}} · requested by {{.By}} · <b>a named person decides — a draft resolves nothing</b></div>
+              <div class="body">{{.Summary}}</div>
+              {{if .TargetHolds}}<div class="body">Target holds: {{.TargetHolds}}</div>{{end}}
+              <div style="margin:5px 0"><span class="pill p-waiting">suggests: {{.Rec}}</span></div>
+              <div class="body">{{.Reasoning}}</div>
+              {{if .Caution}}<div class="body">Verify by hand first: {{.Caution}}</div>{{end}}
+            {{end}}
+            <div class="ran">What actually ran:</div>
+            {{range .Steps}}<div class="astep">{{if .OK}}<span class="ok">✓</span>{{else}}<span class="bad">✗</span>{{end}} {{.Kind}} · {{.Name}}{{if .Detail}} · {{.Detail}}{{end}} · {{.Ms}} ms</div>{{end}}
+          </div>
+          {{end}}
+          {{end}}</td>
+        <td>
+          <form method="post" action="/indoubt/{{.ID}}/resolve" class="stack" style="gap:8px">
+            <input type="text" name="note" placeholder="what you saw in the target system" required>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn sm" name="resolution" value="retry">Send again (safe only)</button>
+              <button class="btn sm ghost" name="resolution" value="confirmed_done">I checked — it is done</button>
+              <button class="btn sm ghost" name="resolution" value="cancelled">Cancel the step</button>
+            </div>
+          </form>
+        </td>
+      </tr>
+      {{else}}<tr><td colspan="3" class="empty">Nothing is in doubt. That is the point.</td></tr>
+      {{end}}
+    </table>
+  </div>
+
+  <div class="card tight">
+    <div class="hd"><h2>Resolved</h2></div>
+    <table class="t">
+      <tr><th>Item</th><th>Reason</th><th>Resolution</th><th style="width:150px">By</th></tr>
+      {{range $d.Closed}}
+      <tr><td><b>{{.ID}}</b><div class="note">{{.CaseID}} · {{.StepID}}</div></td>
+        <td class="note">{{.Reason}}</td>
+        <td><span class="pill p-done">{{.Resolution}}</span></td>
+        <td class="note">{{.ResolvedBy}} · {{timefmt .Resolved}}</td></tr>
+      {{else}}<tr><td colspan="4" class="empty">—</td></tr>
+      {{end}}
+    </table>
+  </div>
+</div>
+{{end}}

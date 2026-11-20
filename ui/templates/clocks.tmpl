@@ -1,0 +1,58 @@
+{{define "clocksboard"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>Clocks</h1>
+  <span class="crumb">every statutory deadline on this instance — a reply cannot close one; only evidence at its declared level can</span></div>
+<main id="main" data-live="1">{{template "clocksboard-main" .}}</main>
+{{template "foot" .}}{{end}}
+
+{{define "clocksboard-main"}}
+{{$d := .Data}}
+<div class="stack">
+  <div class="statstrip">
+    <div class="sitem"><div class="v">{{len $d.Active}}</div><div class="k">running</div></div>
+    <div class="sitem {{if $d.AtRisk}}warn{{end}}"><div class="v">{{$d.AtRisk}}</div><div class="k">at risk or breached</div></div>
+    <div class="sitem"><div class="v">{{len $d.Closed}}</div><div class="k">closed on evidence{{if $d.OnTime}} ({{$d.OnTime}} on time){{end}}</div></div>
+    <div class="sitem wide"><div class="v" style="font-size:15px">{{if $d.Soonest}}{{$d.Soonest}}{{else}}—{{end}}</div><div class="k">next statutory due date on this instance</div></div>
+  </div>
+  <div class="card tight">
+    <div class="hd"><h2>Running</h2><span class="note">{{len $d.Active}} open · soonest first</span></div>
+    <table class="t">
+      <tr><th>Deadline</th><th style="width:110px">Due</th><th style="width:120px">Case</th>
+        <th>Basis</th><th style="width:120px">Closes only on</th><th style="width:92px">Status</th></tr>
+      {{range $d.Active}}
+      <tr>
+        <td><b>{{.Title}}</b>{{if .NeedsLegalConfirmation}} <span class="legal">needs_legal_confirmation</span>{{end}}
+          <div class="note">started {{fdisplay .StartDate}} ({{.StartEvent}}){{if .SkippedDays}} · skipped {{len .SkippedDays}} non-working day(s){{end}}</div></td>
+        <td><b>{{fdisplay .DueDate}}</b></td>
+        <td><a href="/cases/{{.CaseID}}">{{.CaseID}}</a>
+          {{with index $d.EmpOf .CaseID}}<div class="note">{{.Name}}</div>{{end}}</td>
+        <td class="note">{{.Basis}}</td>
+        <td><span class="mono" style="font-size:11px">{{.ClosesOnAction}}</span>
+          <div style="margin-top:3px"><span class="ev ev-{{.EvidenceRequired}}">{{.EvidenceRequired}}</span></div></td>
+        <td><span class="pill p-{{.Status}}">{{.Status}}</span></td>
+      </tr>
+      {{else}}<tr><td colspan="6" class="empty">No clock is running. Every obligation on record is closed — on evidence, not on a reply.</td></tr>
+      {{end}}
+    </table>
+  </div>
+
+  <div class="card tight">
+    <div class="hd stub"><h2>Closed — each by a receipt</h2><span class="note">{{len $d.Closed}} on record</span></div>
+    <div class="tearline"></div>
+    <table class="t">
+      <tr><th>Deadline</th><th style="width:110px">Was due</th><th style="width:120px">Case</th>
+        <th style="width:150px">Closed</th><th style="width:140px">Closed by</th></tr>
+      {{range $d.Closed}}
+      <tr>
+        <td>{{.Title}}</td>
+        <td>{{fdisplay .DueDate}}</td>
+        <td><a href="/cases/{{.CaseID}}">{{.CaseID}}</a></td>
+        <td class="note">{{timefmt .ClosedAt}}</td>
+        <td>{{if .ClosedBy}}<a class="hash" href="/receipts/{{.ClosedBy}}">receipt #{{.ClosedBy}}</a>{{else}}<span class="note">—</span>{{end}}</td>
+      </tr>
+      {{else}}<tr><td colspan="5" class="empty">Nothing closed yet.</td></tr>
+      {{end}}
+    </table>
+  </div>
+</div>
+{{end}}

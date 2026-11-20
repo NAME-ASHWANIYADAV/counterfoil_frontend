@@ -1,0 +1,150 @@
+{{define "admin"}}{{template "head" .}}
+<div class="topbar"><h1>Controls &amp; drills</h1>
+  <span class="crumb">the judge's page: break it on purpose, in front of everyone</span></div>
+<main id="main">{{template "admin-main" .}}</main>
+{{template "foot" .}}{{end}}
+
+{{define "admin-main"}}
+{{$d := .Data}}
+<div class="stack">
+  <div class="row">
+    <div class="card" style="flex:1">
+      <div class="hd"><h2>Kill switch</h2><span class="note">blocks the next action; clocks keep running</span></div>
+      <div class="bd" style="display:flex;gap:10px;align-items:center">
+        {{if $d.Kill.On}}
+          <span class="pill p-breached">ON · {{$d.Kill.Scope}}</span>
+          <form method="post" action="/admin/kill"><input type="hidden" name="on" value="0"><button class="btn">Resume</button></form>
+        {{else}}
+          <span class="pill p-closed">off</span>
+          <form method="post" action="/admin/kill" style="display:flex;gap:8px">
+            <input type="hidden" name="on" value="1">
+            <input type="text" name="scope" placeholder='scope: "all" or a case id' style="width:180px">
+            <button class="btn danger">Pause agents now</button>
+          </form>
+        {{end}}
+      </div>
+    </div>
+    <div class="card" style="flex:1">
+      <div class="hd"><h2>Drill: tamper after approval</h2><span class="note">the gate must refuse a changed request</span></div>
+      <div class="bd" style="display:flex;gap:10px;align-items:center">
+        {{if $d.TamperOn}}<span class="pill p-at_risk">armed</span>
+          <form method="post" action="/admin/tamper"><input type="hidden" name="on" value="0"><button class="btn ghost sm">Disarm</button></form>
+        {{else}}
+          <form method="post" action="/admin/tamper"><input type="hidden" name="on" value="1">
+            <button class="btn amber">Arm: add ₹1 to the next reserved dispatch</button></form>
+        {{end}}
+        <span class="note">approved ₹X → agent sends ₹X+1 → REFUSED: approval does not match. The refusal is receipted.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>The other teams' systems (stand-ins)</h2>
+      <span class="note"><a href="{{$d.MocksURL}}/" target="_blank">open their own consoles ↗</a> — what they store is the fact</span></div>
+    <div class="bd" style="display:flex;gap:10px;flex-wrap:wrap">
+      {{range $svc := slicestr "itsm" "directory" "cards" "payroll"}}
+      <form method="post" action="/admin/lie" style="display:flex;gap:6px;align-items:center;border:1px solid var(--hair);border-radius:6px;padding:7px 10px">
+        <b style="font-size:12.5px">{{$svc}}</b>
+        <input type="hidden" name="svc" value="{{$svc}}">
+        <button class="btn sm ghost" name="on" value="1">lie</button>
+        <button class="btn sm ghost" name="on" value="0">honest</button>
+      </form>
+      {{end}}
+      <span class="note" style="flex-basis:100%">Lie mode: the system replies "created" and stores nothing — the exact failure the read-back exists for. Crash drill: kill the <span class="kbd">cfoil</span> process mid-run and start it again; the ledger reconciles by reading the targets, never by resending blindly (see DEMO.md).</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>Canaries — re-test every guard</h2>
+      <span class="note">each probe must be refused; every run leaves a receipt</span></div>
+    <div class="bd">
+      <form method="post" action="/admin/canaries"><button class="btn">Run the 7 canaries now</button></form>
+      {{if $d.Canaries}}
+      <div class="sep"></div>
+      <table class="t">
+        <tr><th style="width:46px">#</th><th>Guard under test</th><th style="width:90px">Result</th><th>Note</th></tr>
+        {{range $d.Canaries}}
+        <tr><td>{{.ID}}</td><td>{{.Title}}</td>
+          <td>{{if .Held}}<span class="canary-held">HELD</span>{{else}}<span class="canary-fell">FELL</span>{{end}}</td>
+          <td class="note">{{.Note}}</td></tr>
+        {{end}}
+      </table>
+      {{end}}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>Service packages</h2>
+      <span class="note">add a service line = one package + <span class="mono">cfoil check</span> + two named people · zero core files changed</span></div>
+    <div class="bd" style="padding:0">
+      <table class="t">
+        <tr><th>Package</th><th>Status</th><th>Admission check</th><th style="width:380px">Activate</th></tr>
+        {{range $d.Packages}}
+        {{$chk := index $d.Checks .Manifest.Name}}
+        <tr>
+          <td><b>{{.Manifest.Name}}</b> <span class="note">v{{.Manifest.Version}}</span>
+            <div class="note">{{.Manifest.ServiceLine}} · {{len .Manifest.Steps}} steps</div></td>
+          <td>{{if .Active}}<span class="pill p-done">active</span>
+              <div class="note">by {{range $i, $p := .ActivatedBy}}{{if $i}} + {{end}}{{$p}}{{end}}</div>
+            {{else}}<span class="pill p-pending">inactive</span>{{end}}
+            {{if .Cert}}<div class="note">cert <span class="hash">{{short .Cert}}</span></div>{{end}}</td>
+          <td>
+            <form method="post" action="/admin/pkg/check" class="inline">
+              <input type="hidden" name="pkg" value="{{.Manifest.Name}}">
+              <button class="btn sm ghost">Run cfoil check</button>
+            </form>
+            {{if $chk.Package}}
+              <div class="note" style="margin-top:6px">
+                {{if eq $chk.Errors 0}}<b style="color:var(--ok)">PASS</b>{{else}}<b style="color:var(--fail)">REFUSED</b>{{end}}
+                — {{$chk.Errors}} error(s), {{$chk.Warnings}} warning(s)
+                {{range $chk.Findings}}<div>· [{{.Severity}}] {{.Where}}: {{.Message}}</div>{{end}}
+              </div>
+            {{end}}
+          </td>
+          <td>
+            {{if not .Active}}
+            <form method="post" action="/admin/pkg/activate" class="stack" style="gap:6px">
+              <input type="hidden" name="pkg" value="{{.Manifest.Name}}">
+              <div style="display:flex;gap:6px">
+                <input type="password" name="pin" placeholder="your PIN" style="width:90px">
+                <select name="confirmer">
+                  <option value="">second person…</option>
+                  {{range $d.Users}}{{if or (eq .Role "hrops") (eq .Role "hradmin")}}<option value="{{.ID}}">{{.Name}}</option>{{end}}{{end}}
+                </select>
+                <input type="password" name="confirmer_pin" placeholder="their PIN" style="width:90px">
+              </div>
+              <button class="btn sm amber">Activate with two people</button>
+              <span class="note">demo PINs — yours ({{$.User.Name}}): <b class="mono">{{$.User.PIN}}</b>;
+                {{range $d.Users}}{{if or (eq .Role "hrops") (eq .Role "hradmin")}}{{.Name}} <b class="mono">{{.PIN}}</b> {{end}}{{end}}</span>
+            </form>
+            {{else}}<span class="note">—</span>{{end}}
+          </td>
+        </tr>
+        {{end}}
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>Reserved decisions</h2>
+      <span class="note">configuration HR owns — the brief's six are a floor that cannot be removed</span></div>
+    <div class="bd" style="padding:0">
+      <table class="t">
+        <tr><th style="width:70px">ID</th><th>Decision</th><th style="width:140px">Approver role</th><th style="width:90px"></th></tr>
+        {{range $d.Reserved}}
+        <tr><td><b>{{.ID}}</b></td><td>{{.Title}}{{if .Action}} <span class="note mono">{{.Action}}</span>{{end}}</td>
+          <td>{{.ApproverRole}}</td>
+          <td>{{if .Floor}}<span class="pill p-reserved">floor</span>{{else}}<span class="pill p-pending">added</span>{{end}}</td></tr>
+        {{end}}
+      </table>
+      <form method="post" action="/admin/reserved/add" style="display:flex;gap:8px;padding:12px 18px;flex-wrap:wrap">
+        <input type="text" name="id" placeholder="RSV-7" style="width:80px">
+        <input type="text" name="action" placeholder="action, e.g. transfer.approve" style="width:220px">
+        <input type="text" name="title" placeholder="what it guards" style="flex:1;min-width:180px">
+        <select name="approver_role"><option value="hradmin">hradmin</option><option value="manager">manager</option><option value="payroll">payroll</option></select>
+        <button class="btn sm">Add (hradmin only)</button>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}}

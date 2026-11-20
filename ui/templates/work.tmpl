@@ -1,0 +1,72 @@
+{{define "work"}}{{template "head" .}}
+<div class="topbar"><h1>Your work</h1>
+  <span class="crumb">Reserved decisions wait for you by name. Nothing is approved by silence or timeout.</span></div>
+<main id="main" data-live="1">{{template "work-main" .}}</main>
+{{template "foot" .}}{{end}}
+
+{{define "work-main"}}
+{{$d := .Data}}
+<div class="stack">
+  <div class="card tight">
+    <div class="hd"><h2>Approvals addressed to you</h2></div>
+    <table class="t">
+      <tr><th>Approval</th><th>Case</th><th>Decision</th><th style="width:120px">Status</th><th style="width:90px"></th></tr>
+      {{range $d.Approvals}}
+      {{$c := index $d.CaseOf .CaseID}}{{$e := index $d.EmpOf .CaseID}}
+      <tr>
+        <td><b>{{.ID}}</b> <span class="pill p-reserved">{{.ReservedID}}</span></td>
+        <td>{{.CaseID}} · {{$e.Name}}</td>
+        <td class="note">{{if eq .ReservedID "RSV-1"}}Accept the resignation; fix the release date or buyout{{else if eq .ReservedID "RSV-6"}}Sign off and release the final settlement{{else}}{{.ReservedID}}{{end}}</td>
+        <td><span class="pill {{if eq .Status "open"}}p-waiting{{else if eq .Status "granted"}}p-done{{else}}p-in_doubt{{end}}">{{.Status}}</span></td>
+        <td><a class="btn sm {{if ne .Status "open"}}ghost{{end}}" href="/approvals/{{.ID}}">{{if eq .Status "open"}}Decide{{else}}View{{end}}</a></td>
+      </tr>
+      {{else}}<tr><td colspan="5" class="empty">Nothing waits for your signature right now.</td></tr>
+      {{end}}
+    </table>
+  </div>
+
+  <div class="card tight">
+    <div class="hd"><h2>Inputs only you can give</h2></div>
+    <table class="t">
+      <tr><th>Task</th><th style="width:300px"></th></tr>
+      {{range $d.Tasks}}
+      <tr>
+        <td><b>{{.Title}}</b><div class="note">case {{.CaseID}} · step {{.StepID}}</div></td>
+        <td>
+          {{if eq .StepID "survey"}}
+          <div style="display:flex;gap:8px;align-items:center">
+            <a class="btn sm" href="/survey/{{.ID}}">Open the survey</a>
+            <form method="post" action="/tasks/{{.ID}}/skip" class="inline">
+              <input type="hidden" name="back" value="/work"><button class="btn sm ghost">Skip (optional)</button></form>
+          </div>
+          {{else}}
+          <form method="post" action="/tasks/{{.ID}}/done" style="display:flex;gap:8px">
+            <input type="hidden" name="back" value="/work">
+            <input type="text" name="note" placeholder="one-line note (hashed into the receipt)">
+            <button class="btn sm">Confirm done</button>
+          </form>
+          {{end}}
+        </td>
+      </tr>
+      {{else}}<tr><td colspan="2" class="empty">No open inputs.</td></tr>
+      {{end}}
+    </table>
+  </div>
+
+  {{if $d.Decisions}}
+  <div class="card tight">
+    <div class="hd"><h2>Your decisions</h2><span class="note">your personal ledger — every signature you have given, from receipts</span></div>
+    <table class="t">
+      <tr><th style="width:150px">When</th><th>Request</th><th style="width:120px">Case</th><th style="width:110px">Decision</th><th>Reason</th></tr>
+      {{range $d.Decisions}}
+      <tr><td class="note">{{timefmt .TS}}</td>
+        <td><span class="mono" style="font-size:11.5px">{{.RSV}}</span></td>
+        <td><a href="/cases/{{.CaseID}}">{{.CaseID}}</a></td>
+        <td>{{if eq .Status "granted"}}<span class="pill p-done">granted</span>{{else}}<span class="pill p-breached">rejected</span>{{end}}</td>
+        <td class="note">{{if .Reason}}{{.Reason}}{{else}}—{{end}}</td></tr>
+      {{end}}
+    </table>
+  </div>
+  {{end}}
+</div>
+{{end}}

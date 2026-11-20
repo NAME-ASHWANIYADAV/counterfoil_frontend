@@ -1,0 +1,106 @@
+{{define "person"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>{{$d.E.Name}}</h1>
+  <span class="crumb">{{$d.E.Title}} · <span class="hash">{{$d.E.ID}}</span> · what the record holds right now</span></div>
+<main id="main">
+<div class="row">
+  <div class="stack" style="flex:1;min-width:0">
+    <div class="card">
+      <div class="hd"><h2>On file with HR</h2><span class="note">from the employee record, synthetic</span></div>
+      <div class="bd">
+        <table class="t facts">
+          <tr><td>Email</td><td class="mono">{{$d.E.Email}}</td></tr>
+          <tr><td>Location</td><td>{{$d.E.Location}}</td></tr>
+          <tr><td>Joined</td><td>{{fdisplay $d.E.JoinDate}}</td></tr>
+          <tr><td>Manager</td><td>{{if $d.Manager.Name}}{{$d.Manager.Name}} <span class="note">· {{$d.Manager.ID}}</span>{{else}}<span class="note">—</span>{{end}}</td></tr>
+          <tr><td>Monthly gross</td><td class="num">{{inr $d.E.MonthlyGross}}</td></tr>
+          <tr><td>Leave balance</td><td>{{printf "%.1f" $d.E.LeaveBalanceDays}} days</td></tr>
+          <tr><td>Assets</td><td>{{range $i, $a := $d.E.Assets}}{{if $i}} {{end}}<span class="hash">{{$a}}</span>{{else}}<span class="note">none recorded</span>{{end}}</td></tr>
+          <tr><td>Access card</td><td>{{if $d.E.CardID}}<span class="hash">{{$d.E.CardID}}</span>{{else}}<span class="note">none</span>{{end}}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd"><h2>The targets' own records — read live on this request</h2>
+        <span class="note">the same read the dispatcher's read-back performs</span></div>
+      <div class="bd">
+        <div class="liverecs">
+          <div class="liverec">
+            <div class="k">Directory</div>
+            {{if $d.Dir}}
+              <div><span class="pill {{if eq (printf "%s" (index $d.Dir "status")) "active"}}p-done{{else}}p-breached{{end}}">{{index $d.Dir "status"}}</span></div>
+              <div class="note" style="margin-top:6px">id <span class="hash">{{index $d.Dir "id"}}</span></div>
+              {{with index $d.Dir "last_action_ref"}}{{if .}}<div class="note">last action ref <span class="hash">{{.}}</span></div>{{end}}{{end}}
+            {{else if $d.DirNone}}<div><span class="pill p-pending">no account</span></div>
+              <div class="note" style="margin-top:6px">the directory holds no record for this address — read live; for a joiner this is the state before provisioning</div>
+            {{else}}<div class="note">could not read the directory: {{$d.DirErr}}</div>{{end}}
+          </div>
+          <div class="liverec">
+            <div class="k">Access card</div>
+            {{if $d.Card}}
+              <div><span class="pill {{if eq (printf "%s" (index $d.Card "status")) "active"}}p-done{{else}}p-breached{{end}}">{{index $d.Card "status"}}</span></div>
+              <div class="note" style="margin-top:6px">card <span class="hash">{{index $d.Card "id"}}</span> · zones: {{index $d.Card "zones"}}</div>
+              {{with index $d.Card "last_action_ref"}}{{if .}}<div class="note">last action ref <span class="hash">{{.}}</span></div>{{end}}{{end}}
+            {{else if $d.CardNone}}<div><span class="pill p-pending">no card</span></div>
+              <div class="note" style="margin-top:6px">no card is on record for this person — read live</div>
+            {{else}}<div class="note">could not read the card system: {{$d.CardErr}}</div>{{end}}
+          </div>
+        </div>
+        <div class="note" style="margin-top:10px">These panels query the stand-in systems at page load — a disabled
+        account or revoked card shows here the moment the target's record says so, with the reference that ties it
+        to our request when one exists.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stack" style="flex:1;min-width:0">
+    <div class="card">
+      <div class="hd"><h2>Exit</h2></div>
+      <div class="bd">
+        {{if $d.Case}}
+          <div><a href="/cases/{{$d.Case.ID}}"><b>{{$d.Case.ID}}</b></a>
+            <span class="pill {{if eq (printf "%s" $d.Case.Status) "open"}}p-running{{else}}p-done{{end}}">{{$d.Case.Status}}</span></div>
+          <div class="note" style="margin-top:6px">tendered {{fdisplay $d.Case.TenderDate}}{{if $d.Case.BoundLWD}} · last working day {{fdisplay $d.Case.BoundLWD}} (bound by mandate){{end}}</div>
+          {{if or (eq .User.Role "payroll") (eq .User.Role "hrops") (eq .User.Role "hradmin") (eq .User.Role "auditor")}}
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <a class="btn sm ghost" href="/letter/{{$d.Case.ID}}">Relieving letter</a>
+            <a class="btn sm ghost" href="/settlement/{{$d.Case.ID}}">Settlement statement</a>
+          </div>
+          {{else}}
+          <div class="note" style="margin-top:8px">The letter and settlement open for HR back-office roles
+          and the employee themselves.</div>
+          {{end}}
+        {{else}}
+          <div class="note">No exit on record. An exit begins only with the employee's own tender in their chat —
+          nothing here can open one on their behalf.</div>
+        {{end}}
+      </div>
+    </div>
+
+    {{if $d.Clocks}}
+    <div class="card">
+      <div class="hd"><h2>Clocks on this exit</h2><span class="note">each closes only on evidence</span></div>
+      <div class="bd">
+        <table class="t">
+          <tr><th>What</th><th style="width:110px">Due</th><th style="width:90px">Status</th></tr>
+          {{range $d.Clocks}}
+          <tr><td>{{.Title}}</td><td>{{fdisplay .DueDate}}</td>
+            <td><span class="pill p-{{.Status}}">{{.Status}}</span></td></tr>
+          {{end}}
+        </table>
+      </div>
+    </div>
+    {{end}}
+
+    {{if $d.Receipts}}
+    <div class="card tight">
+      <div class="hd stub"><h2>Latest counterfoils</h2><span class="note">newest first</span></div>
+      <div class="tearline"></div>
+      <div class="bd">{{template "receipts" $d.Receipts}}</div>
+    </div>
+    {{end}}
+  </div>
+</div>
+</main>
+{{template "foot" .}}{{end}}

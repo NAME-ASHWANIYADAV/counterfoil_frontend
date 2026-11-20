@@ -1,0 +1,100 @@
+{{define "about"}}<!doctype html>
+<html lang="en" class="boot"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Counterfoil — every exit leaves a receipt</title>
+<meta name="theme-color" content="#0E1B24">
+<script>try{if(sessionStorage.cfb)document.documentElement.classList.remove("boot");sessionStorage.cfb=1}catch(e){}</script>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23014693'/%3E%3Cpath d='M10 7h12v18H10z' fill='%23fff'/%3E%3Cg fill='%23014693'%3E%3Ccircle cx='10' cy='10' r='1.6'/%3E%3Ccircle cx='10' cy='16' r='1.6'/%3E%3Ccircle cx='10' cy='22' r='1.6'/%3E%3C/g%3E%3C/svg%3E">
+</head><body class="aboutpage">
+{{$d := .Data}}
+
+<section class="ab-hero">
+  <div class="ab-wrap">
+    <div class="mark wm" data-reveal style="--i:0">COUNTER<span class="tear"></span><span class="leaf">FOIL</span></div>
+    <h1 data-reveal style="--i:1">A reply is a claim.<br>The record is the fact<span class="enddot"></span></h1>
+    <p class="lede" data-reveal style="--i:2">An agent-first HR services platform, shown in depth on employee
+    exits. Agents run the routine; named humans sign the five decisions that matter; and nothing counts as
+    done until the other team's own system says so — with a receipt an auditor can re-check offline.</p>
+    <div class="ab-cta" data-reveal style="--i:3">
+      <a class="btn" href="/login">Open the working demo</a>
+      <a class="btn ghost" href="#how">How it decides</a>
+    </div>
+  </div>
+</section>
+
+<section class="ab-band">
+  <div class="ab-wrap">
+    <h2>The failure this exists for</h2>
+    <p>TBO's brief names one half of it: <em>"Retries must not duplicate actions — for example ordering two
+    laptops."</em> Real incident reports keep showing the other half: a system replies <b>"created" and saves
+    nothing</b>. An agent believes the reply, a workflow marks the step done, and an ex-employee's account
+    still works — or final wages are never released, with a statutory clock running.</p>
+    <p>So Counterfoil never believes a reply. It reads the target's own record back, grades the evidence, and
+    lets only evidence close a legal deadline.</p>
+  </div>
+</section>
+
+<section class="ab-band alt" id="how">
+  <div class="ab-wrap">
+    <h2>Every external action walks the warrant path</h2>
+    <ol class="ab-path">
+      <li><b>Policy gate</b><span>reserved list · kill switch · the mandate's hash check</span></li>
+      <li><b>Intent ledger</b><span>PENDING, synced to disk before any bytes leave</span></li>
+      <li><b>Send once</b><span>with an idempotency key and our client reference</span></li>
+      <li><b>Read back</b><span>the target's own record, by our reference</span></li>
+      <li><b>Done — or in doubt</b><span>at its evidence level, or to a named person. Never silently.</span></li>
+    </ol>
+    <p class="note">A changed request after approval — one rupee added — fails the mandate's hash check and is
+    refused, with a receipt. A crash between send and commit reconciles by reading the target, never by
+    resending blindly.</p>
+  </div>
+</section>
+
+<section class="ab-band">
+  <div class="ab-wrap">
+    <h2>Live from this instance</h2>
+    <p class="note" style="margin-top:-6px">These numbers are read from the running demo's receipt chain as
+    this page loads — measured, not asserted.</p>
+    <div class="ab-stats">
+      <div class="ab-stat"><div class="v">{{$d.Seq}}</div><div class="k">hash-chained receipts · head <span class="hash">{{short $d.Head}}</span></div></div>
+      <div class="ab-stat"><div class="v">{{if $d.Auto}}{{$d.Auto}}{{else}}—{{end}}</div><div class="k">steps completed without a person</div></div>
+      <div class="ab-stat"><div class="v">{{if $d.Canaries}}{{$d.CanariesHeld}}/{{$d.Canaries}}{{else}}—{{end}}</div><div class="k">canary guards held on their last run</div></div>
+      <div class="ab-stat"><div class="v">{{$d.ClocksClosed}}</div><div class="k">statutory clocks closed on evidence{{if $d.ClocksClosed}} ({{$d.ClocksOnTime}} on time){{end}}</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="ab-band alt">
+  <div class="ab-wrap">
+    <h2>Break it on purpose, in front of everyone</h2>
+    <ul class="ab-drills">
+      <li><b>The lie.</b> Set a stand-in system to reply "201 Created" and store nothing — the verdict must be
+        <i>in doubt</i>, never Done.</li>
+      <li><b>The tamper.</b> Add ₹1 to an approved settlement after sign-off — the gate refuses: the hash no
+        longer matches the mandate.</li>
+      <li><b>The crash.</b> Kill the process mid-dispatch and restart — the ledger reconciles by reading the
+        target; nothing is re-sent blindly.</li>
+      <li><b>The agent that oversteps.</b> Let an agent try to decide an approval — refused; only named people
+        hold mandates.</li>
+    </ul>
+    <p class="note">Seven canaries re-run these guards on demand; every run leaves a receipt, and the offline
+    verifier re-checks the whole history with no network and no database.</p>
+  </div>
+</section>
+
+<section class="ab-hero ab-close">
+  <div class="ab-wrap">
+    <h2 data-reveal>Named humans decide. Agents do the rest.<br>Done means confirmed.</h2>
+    <div class="ab-cta"><a class="btn" href="/login">Open the demo</a></div>
+    <p class="note" style="margin-top:26px">Team Init to Win It — Sonal Verma, Ashwani Yadav, Arpita,
+    Vaibhav Gupta, Lakshay Bansal · VoyageHack 4.0, PS2 · a design-stage prototype on synthetic data and
+    our own stand-in systems. Type: IBM Plex (SIL OFL). Nothing on this page is a projection.</p>
+  </div>
+  <div class="ghost" aria-hidden="true">COUNTERFOIL</div>
+</section>
+
+{{template "pubfoot" .}}
+<script src="/static/app.js"></script>
+</body></html>
+{{end}}

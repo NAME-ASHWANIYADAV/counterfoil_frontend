@@ -1,0 +1,80 @@
+{{define "dashboard"}}{{template "head" .}}
+<div class="topbar"><h1>Dashboard</h1>
+  <span class="crumb">every figure on this page is computed from receipts on this instance — measured, not asserted</span></div>
+<main id="main" data-live="1">{{template "dashboard-main" .}}</main>
+{{template "foot" .}}{{end}}
+
+{{define "dashboard-main"}}
+{{$d := .Data}}
+<div class="stack">
+  <div class="grid g4">
+    <div class="card stat"><div class="v plain">{{$d.CasesOpen}} open · {{$d.CasesClosed}} closed</div>
+      <div class="k">exit cases</div></div>
+    <div class="card stat"><div class="v">{{$d.Auto}}</div><div class="k">steps completed without a person</div>
+      <div class="s">{{$d.AutoNote}}</div></div>
+    <div class="card stat">
+      <div class="v plain">
+        <span class="bigok">{{index $d.Coverage "attributed"}}</span> ·
+        <span style="color:var(--doubt)">{{index $d.Coverage "observed"}}</span> ·
+        <span class="bigbad">{{index $d.Coverage "reply_only"}}</span></div>
+      <div class="k">coverage: attributed · observed · reply-only</div>
+      <div class="s">{{$d.CoverageNote}}</div></div>
+    <div class="card stat"><div class="v {{if gt $d.InDoubtOpen 0}}bigamber{{end}}">{{$d.InDoubtOpen}}</div>
+      <div class="k">in doubt, open</div>
+      <div class="s">unknown outcomes go to a named person; they are work, not noise</div></div>
+  </div>
+
+  <div class="grid g4">
+    <div class="card stat">
+      <div class="v plain"><span class="bigok">{{$d.ClocksClosed}}</span> closed · {{$d.ClocksOpen}} open</div>
+      <div class="k">clocks ({{$d.ClocksOnTime}} closed on time{{if gt $d.ClocksAtRisk 0}} · <span class="bigamber">{{$d.ClocksAtRisk}} at risk</span>{{end}}{{if gt $d.ClocksBreached 0}} · <span class="bigbad">{{$d.ClocksBreached}} breached</span>{{end}})</div>
+      <div class="s">a clock closes only on evidence at its declared level</div></div>
+    <div class="card stat"><div class="v plain">{{$d.Seq}}</div>
+      <div class="k">receipts, hash-chained · head <span class="hash">{{short $d.Head}}</span></div>
+      <div class="s">{{if $d.Cp.UptoSeq}}signer countersigned up to #{{$d.Cp.UptoSeq}}{{else}}no checkpoint yet{{end}}
+      {{if $d.SignerErr}} · <span class="bigbad">signer: {{$d.SignerErr}}</span>{{end}}</div></div>
+    <div class="card stat">
+      <div class="v plain">{{if gt $d.Canaries 0}}<span class="{{if eq $d.Canaries $d.CanariesHeld}}bigok{{else}}bigbad{{end}}">{{$d.CanariesHeld}} of {{$d.Canaries}}</span>{{else}}not run yet{{end}}</div>
+      <div class="k">canaries held (last runs)</div>
+      <div class="s">every guard is re-tested with a request it must refuse; each run is receipted</div></div>
+    <div class="card stat"><div class="v plain">{{$d.ModelCalls}} calls</div>
+      <div class="k">model usage · {{$d.ModelTokens}} tokens · {{$d.ModelName}}</div>
+      <div class="s">rules decide dates, money and approvers; the model reads through typed tools, drafts, and stages what a person confirms. Every call is receipted; 0 calls when no key is configured — nothing here pretends.</div></div>
+  </div>
+
+  <div class="grid g4">
+    <div class="card stat">
+      <div class="v plain">{{if $d.AvgClose}}{{$d.AvgClose}}{{else}}—{{end}}</div>
+      <div class="k">open → closed, average</div>
+      <div class="s">{{if $d.AvgClose}}measured from case.opened to case.closed receipts{{else}}no case has closed on this instance yet{{end}}</div></div>
+    <div class="card stat">
+      <div class="v plain">{{if $d.AvgResolve}}{{$d.AvgResolve}}{{else}}—{{end}}</div>
+      <div class="k">in-doubt items: opened → resolved, average</div>
+      <div class="s">{{if $d.AvgResolve}}a person looked at the target and decided; receipted{{else}}nothing has needed resolving yet{{end}}</div></div>
+    <div class="card stat">
+      <div class="v plain {{if gt $d.Refusals 0}}bigok{{end}}">{{$d.Refusals}}</div>
+      <div class="k">dispatches refused by the gate</div>
+      <div class="s">a refusal is the product working: a changed or unwarranted request stopped before any bytes left, with a receipt</div></div>
+    <div class="card stat">
+      <div class="v plain">{{$d.Retries}}</div>
+      <div class="k">receipted retries</div>
+      <div class="s">nothing is ever resent silently — every retry is a person's decision, on the record</div></div>
+  </div>
+
+  <div class="card tight">
+    <div class="hd stub"><h2>Latest activity</h2><span class="note">the newest counterfoils on the chain — every number links to its receipt</span></div>
+    <div class="tearline"></div>
+    <div class="bd">{{template "receipts" $d.Feed}}</div>
+  </div>
+
+  <div class="card"><div class="bd note">
+    <b>How to read this page.</b> "15 of 19 per exit" is the design target from the exits
+    package (2 reserved decisions + 2 human inputs). The measured figure above counts
+    receipts on this instance, including demo drills. Coverage separates how a step was
+    proven: <span class="ev ev-attributed">attributed</span> means the target's record
+    carries our reference; <span class="ev ev-observed">observed</span> means the state is
+    right but cannot be tied to our request; <span class="ev ev-reply_only">reply_only</span>
+    means the target offered nothing to read back — those steps never close a money clock.
+  </div></div>
+</div>
+{{end}}

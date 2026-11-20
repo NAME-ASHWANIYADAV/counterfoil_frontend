@@ -1,0 +1,60 @@
+{{define "login"}}<!doctype html>
+<html lang="en" class="boot"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in · Counterfoil</title>
+<script>/* the arrival plays once per session, not on every page */
+try{if(sessionStorage.cfb)document.documentElement.classList.remove("boot");sessionStorage.cfb=1}catch(e){}</script>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23014693'/%3E%3Cpath d='M10 7h12v18H10z' fill='%23fff'/%3E%3Cg fill='%23014693'%3E%3Ccircle cx='10' cy='10' r='1.6'/%3E%3Ccircle cx='10' cy='16' r='1.6'/%3E%3Ccircle cx='10' cy='22' r='1.6'/%3E%3C/g%3E%3C/svg%3E">
+</head><body>
+<div class="login">
+  <div class="loginband"><span class="mark wm">COUNTER<span class="tear"></span><span class="leaf">FOIL</span></span><span class="note">An HR services platform — VoyageHack 4.0 working demo</span></div>
+  <div class="ghost" aria-hidden="true">COUNTERFOIL</div>
+  <div class="login-grid">
+    <div class="intro" data-reveal style="--i:0">
+      <div class="mark wm">COUNTER<span class="tear"></span><span class="leaf">FOIL</span></div>
+      <div class="tag">Named humans decide. Agents do the rest.<br>Done means confirmed<span class="enddot"></span></div>
+      <p>An agent-first HR services platform, shown in depth on employee exits. Every action
+      on another team's system runs under a warrant, and every state change leaves a
+      counterfoil — a hash-chained, countersigned receipt an auditor can re-check offline.</p>
+      <p><span class="claim">A reply is a claim; the record is the fact.</span> A step counts
+      as done only when the target system's own record confirms it.</p>
+      <div class="tape" data-reveal style="--i:2">
+        <div class="tapehd"><span>The ledger, live</span><span>head {{short .Data.Head}}</span></div>
+        {{range .Data.Tape}}
+        <div class="taperow"><span class="seq">#{{printf "%04d" .Seq}}</span><span class="act">{{.Action}}{{if .CaseID}} — {{.CaseID}}{{end}}</span></div>
+        {{end}}
+      </div>
+      <p style="margin-top:18px;font-size:13px"><a href="/about">Read how Counterfoil decides</a></p>
+    </div>
+    <div class="cfcard" data-reveal style="--i:1">
+      <div class="stubhd">
+        <span class="mark wm">COUNTER<span class="tear"></span><span class="leaf">FOIL</span></span>
+        <span class="ser">receipt book no. {{.Data.Seq}}</span>
+      </div>
+      <div class="tearline"></div>
+      <div class="personas">
+        <h2>Continue as <span class="note" style="font-weight:400">— pick anyone; one click, no password</span></h2>
+        {{range .Data.Users}}
+        <form method="post" action="/login">
+          <input type="hidden" name="user" value="{{.ID}}">
+          <button class="persona">
+            <span class="av">{{slice .Name 0 1}}</span>
+            <span><span class="nm">{{.Name}}</span><br><span class="tt">{{.Title}}</span></span>
+            <span class="rolechip {{if or (eq .Role "manager") (eq .Role "payroll")}}amber{{end}}">{{.Role}}</span>
+          </button>
+        </form>
+        {{end}}
+      </div>
+      <div class="stubft">This picker stands in for corporate single sign-on — an internal HR
+      platform has no self-registration: accounts are provisioned by HR and IT through the
+      onboarding journey, and identity comes from the company directory. PINs stand in for
+      the identity provider's re-login and are asked only at decisions, never here. All
+      people and data are synthetic.</div>
+    </div>
+  </div>
+</div>
+{{template "pubfoot" .}}
+<script src="/static/app.js"></script>
+</body></html>
+{{end}}

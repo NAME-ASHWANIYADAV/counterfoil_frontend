@@ -1,0 +1,49 @@
+{{define "settlement"}}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Settlement statement · {{.Data.Emp.Name}}</title>
+<link rel="stylesheet" href="/static/app.css"></head>
+<body style="background:var(--bg)">
+{{$d := .Data}}
+<div class="letter">
+  <div class="dochead">COUNTERFOIL · SYNTHETIC DEMO DOCUMENT</div>
+  <h1 style="margin-top:14px">Full and final settlement — statement</h1>
+  <p><b>{{$d.Emp.Name}}</b> ({{$d.Emp.ID}}), {{$d.Emp.Title}} — case {{$d.C.ID}}{{if $d.FF}},
+  period {{$d.FF.Period}}{{end}}.</p>
+
+  {{if $d.FF}}
+  <table class="t ffdoc">
+    <tr><th>Line</th><th>Basis</th><th class="num" style="width:150px">Amount</th></tr>
+    {{range $d.FF.Lines}}
+    <tr><td>{{.Label}}{{if .Note}} <span class="legal">{{.Note}}</span>{{end}}</td>
+      <td class="note">{{.Cite}}</td>
+      <td class="num">{{inr .Amount}}</td></tr>
+    {{end}}
+    <tr class="total"><td><b>Net payable</b></td><td class="note">sum of the cited lines; a negative line is a recovery</td>
+      <td class="num"><b>{{inr $d.FF.Total}}</b></td></tr>
+  </table>
+  <p class="note">Service on record: {{printf "%.1f" $d.FF.ServiceYears}} years ·
+    gratuity {{if $d.FF.GratuityEligible}}payable{{else}}not payable at this length of service{{end}}.</p>
+
+  {{if $d.Released}}
+  <p><b>Released.</b> The payment is on the payroll system's own record at evidence
+  <span class="ev ev-{{$d.RelEv}}">{{$d.RelEv}}</span>, under mandate
+  <span class="hash">{{$d.Mandate}}</span> — receipt
+  <a class="hash" href="/receipts/{{$d.RelSeq}}">#{{$d.RelSeq}}</a>.</p>
+  {{else}}
+  <p><b>Not yet released.</b> The settlement stands as a held draft until the payroll approver
+  signs off — a reserved decision — and it counts as paid only when the payroll system's own
+  record confirms the release.</p>
+  {{end}}
+  {{else}}
+  <p><b>Not yet computed.</b> The settlement is prepared by the cited rules near the last working
+  day, after clearances. Nothing is estimated here in the meantime.</p>
+  {{end}}
+
+  <div class="perf"></div>
+  <p class="note">The figures above are rule outputs recorded on the case; the release, when it
+  happens, leaves a receipt this page links. Print or save as PDF — the statement keeps its stub,
+  like a cheque book keeps its counterfoil.</p>
+  <p class="noprint"><a href="/">← back to the product</a></p>
+</div>
+</body></html>
+{{end}}

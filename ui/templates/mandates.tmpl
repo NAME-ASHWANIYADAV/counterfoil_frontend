@@ -1,0 +1,31 @@
+{{define "mandates"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>Mandates</h1>
+  <span class="crumb">every warrant ever issued on this instance — single-use, hash-bound, 45-minute expiry; the registry is read from receipts</span></div>
+<main id="main">
+<div class="card tight">
+  <div class="hd stub"><h2>Registry</h2><span class="note">{{len $d.Rows}} issued · newest first</span></div>
+  <div class="tearline"></div>
+  <table class="t">
+    <tr><th style="width:90px">Mandate</th><th style="width:70px">Guards</th><th style="width:110px">Case</th>
+      <th>Approver</th><th>Binds request hash</th><th style="width:130px">Issued</th><th style="width:110px">State</th></tr>
+    {{range $d.Rows}}
+    <tr>
+      <td><b>{{.M.ID}}</b><div class="note"><a class="rlink" href="/receipts/{{.Seq}}">#{{.Seq}}</a></div></td>
+      <td><span class="pill p-reserved">{{.M.ReservedID}}</span></td>
+      <td><a href="/cases/{{.M.CaseID}}">{{.M.CaseID}}</a></td>
+      <td>{{call $d.NameOf .M.ApproverID}}<div class="note">re-auth: {{.M.ReAuth}}</div></td>
+      <td><span class="hash" title="{{.M.RequestHash}}">{{short .M.RequestHash}}</span>
+        <div class="note">change one rupee and this hash changes — the gate refuses the dispatch</div></td>
+      <td class="note">{{timefmt .M.IssuedAt}}<br>expires {{timefmt .M.ExpiresAt}}</td>
+      <td>{{if .Used}}<span class="pill p-done">used once</span>
+        {{else if .Expired}}<span class="pill p-pending">expired unused</span>
+        {{else}}<span class="pill p-waiting">live</span>{{end}}</td>
+    </tr>
+    {{else}}<tr><td colspan="7" class="empty">No mandate has been issued yet. One appears the moment a named
+      person approves a reserved decision.</td></tr>
+    {{end}}
+  </table>
+</div>
+</main>
+{{template "foot" .}}{{end}}

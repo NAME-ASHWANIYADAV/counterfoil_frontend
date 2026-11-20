@@ -1,0 +1,65 @@
+{{define "audit"}}{{template "head" .}}
+<div class="topbar"><h1>Audit room</h1>
+  <span class="crumb">the record is the product: export it and re-check it with no network and no database</span></div>
+<main id="main">{{template "audit-main" .}}</main>
+{{template "foot" .}}{{end}}
+
+{{define "audit-main"}}
+{{$d := .Data}}
+<div class="stack">
+  <div class="grid g3">
+    <div class="card stat"><div class="v plain">{{$d.Seq}}</div>
+      <div class="k">receipts · head <span class="hash" title="{{$d.Head}}">{{short $d.Head}}</span></div>
+      <div class="s">every receipt hashes itself and the one before; personal text never enters — hashes stand in</div></div>
+    <div class="card stat">
+      <div class="v plain">{{if $d.Cp.UptoSeq}}#{{$d.Cp.UptoSeq}}{{else}}—{{end}}</div>
+      <div class="k">last signer checkpoint</div>
+      <div class="s">{{if $d.Cp.UptoSeq}}countersigned {{timefmt $d.Cp.TS}} · key <span class="hash">{{short $d.Cp.Pub}}</span>{{else}}none yet{{end}}
+        {{if $d.SignerErr}}<br><b style="color:var(--fail)">signer: {{$d.SignerErr}}</b>{{end}}</div></div>
+    <div class="card stat">
+      <div class="k" style="margin-top:0">Verify offline</div>
+      <div class="s">The bundle lands in <span class="mono">export/</span>. Then, with networking off if you like:<br>
+        <span class="kbd">go run ./cmd/verify-audit -dir export</span></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <form method="post" action="/audit/export"><button class="btn ghost sm">Export bundle</button></form>
+        <form method="post" action="/audit/verify"><button class="btn sm">Export + verify now</button></form>
+      </div></div>
+  </div>
+
+  {{if $d.Checkpoints}}
+  <div class="card tight">
+    <div class="hd"><h2>Countersignatures</h2>
+      <span class="note">the separate signer's memory of the chain — it refuses to re-sign a rewritten past</span></div>
+    <table class="t">
+      <tr><th style="width:110px">Covers up to</th><th style="width:170px">Countersigned</th><th>Signer key</th><th>Signature</th></tr>
+      {{range $d.Checkpoints}}
+      <tr><td><a class="rlink" href="/receipts/{{.UptoSeq}}">#{{.UptoSeq}}</a></td>
+        <td class="note">{{timefmt .TS}}</td>
+        <td><span class="hash" title="{{.Pub}}">{{short .Pub}}</span></td>
+        <td><span class="hash" title="{{.Sig}}">{{short .Sig}}</span></td></tr>
+      {{end}}
+    </table>
+  </div>
+  {{end}}
+
+  {{if $d.Checks}}
+  <div class="card tight">
+    <div class="hd"><h2>Offline verifier — 10 checks</h2><span class="note">run {{timefmt $d.CheckedAt}} on the exported bundle (same code as cmd/verify-audit)</span></div>
+    <table class="t">
+      <tr><th style="width:40px">#</th><th>Check</th><th style="width:86px">Result</th><th>Detail</th></tr>
+      {{range $d.Checks}}
+      <tr><td class="num">{{.N}}</td><td>{{.Title}}</td>
+        <td>{{if .Pass}}<span class="canary-held">PASS</span>{{else}}<span class="canary-fell">FAIL</span>{{end}}</td>
+        <td class="note">{{.Detail}}</td></tr>
+      {{end}}
+    </table>
+  </div>
+  {{end}}
+
+  <div class="card tight">
+    <div class="hd"><h2>Receipt chain (latest 250)</h2>
+      <span class="note">filter by case: add <span class="mono">?case=EXIT-0001</span></span></div>
+    <div class="bd">{{template "receipts" $d.Receipts}}</div>
+  </div>
+</div>
+{{end}}

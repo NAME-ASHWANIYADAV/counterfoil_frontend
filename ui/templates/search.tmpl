@@ -1,0 +1,65 @@
+{{define "search"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>Search</h1>
+  <span class="crumb">people, cases, receipts and clocks — a sequence number or a hash prefix finds its counterfoil</span></div>
+<main id="main">
+<div class="stack">
+  <div class="card"><div class="bd">
+    <form method="get" action="/search" style="display:flex;gap:8px;max-width:560px">
+      <input type="text" name="q" value="{{$d.Q}}" placeholder="a name, case id, action, seq number or hash prefix" autofocus style="flex:1">
+      <button class="btn">Search</button>
+    </form>
+  </div></div>
+
+  {{if $d.Q}}
+  {{if $d.People}}
+  <div class="card tight">
+    <div class="hd"><h2>People</h2><span class="note">{{len $d.People}}</span></div>
+    <table class="t">
+      {{range $d.People}}
+      <tr><td style="width:220px"><a href="/people/{{.ID}}"><b>{{.Name}}</b></a></td>
+        <td><span class="hash">{{.ID}}</span></td><td class="note">{{.Title}}</td><td class="note">{{.Email}}</td></tr>
+      {{end}}
+    </table>
+  </div>
+  {{end}}
+  {{if $d.Cases}}
+  <div class="card tight">
+    <div class="hd"><h2>Cases</h2><span class="note">{{len $d.Cases}}</span></div>
+    <table class="t">
+      {{range $d.Cases}}
+      <tr><td style="width:160px"><a href="/cases/{{.ID}}"><b>{{.ID}}</b></a></td>
+        <td class="note">{{.Package}}</td>
+        <td>{{with index $d.EmpOf .ID}}{{.Name}}{{end}}</td>
+        <td><span class="pill {{if eq (printf "%s" .Status) "open"}}p-running{{else}}p-done{{end}}">{{.Status}}</span></td></tr>
+      {{end}}
+    </table>
+  </div>
+  {{end}}
+  {{if $d.Receipts}}
+  <div class="card tight">
+    <div class="hd stub"><h2>Receipts</h2><span class="note">{{len $d.Receipts}} · newest first</span></div>
+    <div class="tearline"></div>
+    <div class="bd">{{template "receipts" $d.Receipts}}</div>
+  </div>
+  {{end}}
+  {{if $d.Clocks}}
+  <div class="card tight">
+    <div class="hd"><h2>Clocks</h2><span class="note">{{len $d.Clocks}}</span></div>
+    <table class="t">
+      {{range $d.Clocks}}
+      <tr><td>{{.Title}}</td><td style="width:120px">{{fdisplay .DueDate}}</td>
+        <td style="width:120px"><a href="/cases/{{.CaseID}}">{{.CaseID}}</a></td>
+        <td style="width:100px"><span class="pill p-{{.Status}}">{{.Status}}</span></td></tr>
+      {{end}}
+    </table>
+  </div>
+  {{end}}
+  {{if and (not $d.People) (not $d.Cases) (not $d.Receipts) (not $d.Clocks)}}
+  <div class="card"><div class="empty">Nothing on the record matches “{{$d.Q}}”. Try a name, a case id,
+    an action like <span class="mono">payment.released</span>, a receipt number, or six or more characters of a hash.</div></div>
+  {{end}}
+  {{end}}
+</div>
+</main>
+{{template "foot" .}}{{end}}

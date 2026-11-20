@@ -1,0 +1,73 @@
+{{define "case"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>{{$d.C.ID}} — {{$d.Emp.Name}}</h1>
+  <span class="crumb"><a href="/cases">← cases</a> · {{$d.C.Package}} · {{$d.Emp.ID}} · {{$d.Emp.Title}}</span></div>
+<main id="main" data-live="1">{{template "case-main" .}}</main>
+{{template "foot" .}}{{end}}
+
+{{define "case-main"}}
+{{$d := .Data}}
+<div class="stack">
+  <div class="card">
+    <div class="hd"><h2>One journey — {{$d.StepsDone}} of {{$d.StepsAll}} steps done</h2>
+      <span class="note">people hold the diamonds; ✓ = the other team's own system shows it done ·
+      automated so far: <b>{{$d.Auto}}</b></span></div>
+    {{template "tracker" $d}}
+    <div class="sep" style="margin:0"></div>
+    {{template "steptable" $d}}
+  </div>
+
+  <div class="card tight">
+    <div class="hd"><h2>Who is on this case</h2><span class="note">read from the record: the leaver, the org chart, and every named signature</span></div>
+    <table class="t">
+      <tr><th style="width:170px">Part</th><th style="width:240px">Name</th><th>Detail</th></tr>
+      {{range $d.Participants}}
+      <tr><td class="note">{{.Who}}</td>
+        <td><b>{{.Name}}</b>{{if .Pill}} <span class="pill p-{{.Pill}}">{{.Pill}}</span>{{end}}</td>
+        <td class="note">{{.Detail}}</td></tr>
+      {{end}}
+    </table>
+  </div>
+
+  {{if $d.InDoubt}}
+  <div class="card">
+    <div class="hd"><h2>In doubt on this case</h2><span class="note">never a guess: a named person decides</span></div>
+    <div class="bd" style="padding:0"><table class="t">
+      <tr><th>Item</th><th>Reason</th><th style="width:120px">Owner</th><th style="width:110px">Status</th></tr>
+      {{range $d.InDoubt}}
+      <tr><td><b>{{.ID}}</b><div class="note">step {{.StepID}}</div></td>
+        <td class="note">{{.Reason}}</td><td>{{.OwnerRole}}</td>
+        <td>{{if .Open}}<a class="btn sm" href="/indoubt">Resolve</a>{{else}}<span class="pill p-done">{{.Resolution}}</span>{{end}}</td></tr>
+      {{end}}
+    </table></div>
+  </div>
+  {{end}}
+
+  <div class="row">
+    <div class="card" style="flex:1.1">
+      <div class="hd"><h2>Clocks</h2><span class="note">a reply cannot close a clock; only the other team's own record can</span></div>
+      <div class="bd">{{template "clocks" $d}}</div>
+    </div>
+    {{if $d.FF}}
+    <div class="card" style="flex:.9">
+      <div class="hd"><h2>Final settlement — computed by rules</h2><span class="note">every line cited; a model never touches these numbers</span></div>
+      <div class="bd" style="padding:0"><table class="t">
+        <tr><th>Line</th><th class="num" style="width:130px">Amount</th></tr>
+        {{range $d.FF.Lines}}
+        <tr><td>{{.Label}}<div class="note">{{.Cite}}{{if .Note}} · <span class="legal">{{.Note}}</span>{{end}}</div></td>
+          <td class="num">{{inr .Amount}}</td></tr>
+        {{end}}
+        <tr><td><b>Total payable ({{$d.FF.Period}})</b></td><td class="num"><b>{{inr $d.FF.Total}}</b></td></tr>
+      </table></div>
+    </div>
+    {{end}}
+  </div>
+
+  <div class="card tight">
+    <div class="hd stub"><h2>Receipts — the counterfoils</h2>
+      <span class="note">hash-chained in order; export and re-check them offline in the audit room</span></div>
+    <div class="tearline"></div>
+    <div class="bd">{{template "receipts" $d.Receipts}}</div>
+  </div>
+</div>
+{{end}}

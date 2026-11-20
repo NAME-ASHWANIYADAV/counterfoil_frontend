@@ -1,0 +1,13 @@
+The font files in this directory are all licensed under the SIL Open
+Font License, Version 1.1 (https://openfontlicense.org):
+
+- Montserrat — Copyright 2011 The Montserrat Project Authors
+  (https://github.com/JulietaUla/Montserrat)
+- Open Sans — Copyright 2020 The Open Sans Project Authors
+  (https://github.com/googlefonts/opensans)
+- IBM Plex Mono, IBM Plex Serif — Copyright 2017 IBM Corp., with
+  Reserved Font Name "Plex" (https://github.com/IBM/plex)
+
+Each family is used under the OFL; the fonts are self-hosted and are
+not sold separately. The full OFL text is available at the link above
+and in each upstream repository.

@@ -1,0 +1,40 @@
+{{define "onboarding_new"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>Start onboarding</h1>
+  <span class="crumb">the second service line on the same kernel — a case opens only from a signed offer, entered by a named person</span></div>
+<main id="main">
+<div class="rcptwrap">
+  {{if not $d.Active}}
+  <div class="card" style="margin-bottom:16px"><div class="bd">
+    <b>The onboarding package is not active yet.</b>
+    <div class="note" style="margin-top:6px">A service line activates only as data, only after its admission
+    check passes, and only by <b>two named people</b>. Run the check and activate it in
+    <a href="/admin">Controls &amp; drills</a> — then come back here. Submitting below will be refused
+    until then; the refusal is the platform working.</div>
+  </div></div>
+  {{end}}
+  <div class="card">
+    <div class="hd stub"><h2>Offer details</h2><span class="note">typed and validated; a model never fills these</span></div>
+    <div class="tearline"></div>
+    <div class="bd">
+      <form method="post" action="/onboarding/start" class="stack" style="gap:12px;max-width:460px">
+        <label class="f">Full name<input type="text" name="name" required placeholder="as on the signed offer"></label>
+        <label class="f">Work email to be created<input type="text" name="email" required placeholder="first.last@corp.example"></label>
+        <label class="f">Title<input type="text" name="title" required placeholder="e.g. Product Analyst"></label>
+        <label class="f">Reports to
+          <select name="manager_id" required>
+            {{range $d.Managers}}<option value="{{.ID}}">{{.Name}} — {{.Title}}</option>{{end}}
+          </select></label>
+        <label class="f">Location<input type="text" name="location" placeholder="e.g. Gurugram"></label>
+        <label class="f">Monthly gross (INR)<input type="text" name="monthly_gross" required placeholder="e.g. 120000"></label>
+        <label class="f">Joining date<input type="date" name="joining_date" required></label>
+        <div><button class="btn">Open the onboarding case</button></div>
+        <span class="note">What happens next: the duplicate-hire check reads the directory's own records;
+        a named HR administrator extends the offer under RSV-2; laptop, card and payroll effects run under
+        the warrant path and count as done only on read-back.</span>
+      </form>
+    </div>
+  </div>
+</div>
+</main>
+{{template "foot" .}}{{end}}

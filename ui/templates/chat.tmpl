@@ -1,0 +1,62 @@
+{{define "chat"}}{{template "head" .}}
+<div class="topbar"><h1>Chat</h1>
+  <span class="crumb">policy answers come from the cited rule pack; your resignation is taken here and decided by a named person</span></div>
+<main id="main" data-live="1">{{template "chat-main" .}}</main>
+{{template "foot" .}}{{end}}
+
+{{define "chat-main"}}
+{{$d := .Data}}
+<div class="chatpage">
+  {{if $d.Case}}
+  <a class="ctxstrip" href="/myexit">
+    <span class="k">Your exit</span>
+    <b>{{$d.Case.ID}}</b>
+    <span class="pill {{if eq (printf "%s" $d.Case.Status) "open"}}p-running{{else}}p-done{{end}}">{{$d.Case.Status}}</span>
+    <span class="note">{{$d.StepsDone}} of {{$d.StepsAll}} steps done{{if $d.Case.BoundLWD}} · last working day {{fdisplay $d.Case.BoundLWD}}{{end}}</span>
+    <span class="go">Open the tracker</span>
+  </a>
+  {{end}}
+
+  <div class="card chat">
+    <div class="log">
+      {{range $d.Msgs}}
+        <div class="msg {{if eq .From "counterfoil"}}bot{{else}}me{{end}}">
+          {{.Text}}
+          {{if .Kind}}<span class="src">{{.Kind}}</span>{{end}}
+        </div>
+      {{else}}
+        <div class="msg bot">Hello {{$d.Emp.Name}} — ask me a policy question, check where your exit
+        stands, or tell me you wish to resign. Every answer carries its source.
+        <span class="src">src:rules · answers carry their citation</span></div>
+      {{end}}
+      {{if $d.Pending.Active}}
+      <div class="msg card">
+        <b>Please confirm — this click is the formal tender.</b>
+        <form method="post" action="/chat/confirm" style="margin-top:9px;display:flex;flex-direction:column;gap:9px">
+          <div>You are submitting your resignation.</div>
+          <label class="f">Requested last working day (the notice rule proposes the earliest date if left empty)
+            <input type="date" name="requested_lwd" value="{{$d.Pending.RequestedLWD}}">
+          </label>
+          <div style="display:flex;gap:8px">
+            <button class="btn" name="decision" value="confirm">Confirm and submit</button>
+            <button class="btn ghost" name="decision" value="cancel">Cancel</button>
+          </div>
+          <span class="note">Acknowledged is not accepted: a named approver decides, never an agent, never a timeout.</span>
+        </form>
+      </div>
+      {{end}}
+    </div>
+    <div class="prompts">
+      <form method="post" action="/chat/send" class="inline"><input type="hidden" name="text" value="What is my notice period, and does my leave balance get paid out?"><button class="chip">Notice period &amp; leave</button></form>
+      <form method="post" action="/chat/send" class="inline"><input type="hidden" name="text" value="Where does my exit stand right now? What happens next?"><button class="chip">Where does my exit stand?</button></form>
+      <form method="post" action="/chat/send" class="inline"><input type="hidden" name="text" value="How much will I get in my final settlement?"><button class="chip">My settlement</button></form>
+    </div>
+    <form class="bar" method="post" action="/chat/send">
+      <input type="text" name="text" placeholder="Ask about notice, final settlement, gratuity… or say you wish to resign" autocomplete="off" autofocus>
+      <button class="btn">Send</button>
+    </form>
+  </div>
+  <div class="note" style="text-align:center">The assistant answers only from typed tools over the live record —
+  model and tools are named under every reply, and anything it stages is yours to confirm.</div>
+</div>
+{{end}}

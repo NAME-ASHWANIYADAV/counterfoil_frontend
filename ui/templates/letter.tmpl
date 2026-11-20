@@ -1,0 +1,25 @@
+{{define "letter"}}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relieving letter · {{.Data.Emp.Name}}</title>
+<link rel="stylesheet" href="/static/app.css"></head>
+<body style="background:var(--bg)">
+<div class="letter">
+  <div class="dochead">COUNTERFOIL · SYNTHETIC DEMO DOCUMENT</div>
+  <h1 style="margin-top:14px">Relieving letter</h1>
+  <p>Date: {{timefmt .Data.C.ClosedAt}}</p>
+  <p>This is to state that <b>{{.Data.Emp.Name}}</b> ({{.Data.Emp.ID}}), {{.Data.Emp.Title}},
+  has been relieved from their duties at the close of business on
+  <b>{{fdisplay .Data.C.BoundLWD}}</b>, following due acceptance of their resignation.</p>
+  <p>Clearance of accounts, access and assets was confirmed against each owning system's own
+  records before this letter was issued. The full-and-final settlement is governed by its own
+  receipted clock.</p>
+  <p>We thank them for their contributions and wish them well.</p>
+  <p style="margin-top:34px">For the employer (synthetic),<br><b>HR Operations</b></p>
+  <div class="perf"></div>
+  <div class="note">Counterfoil of this letter: receipt #{{.Data.Seq}} · hash
+    <span class="hash">{{short .Data.Hash}}</span> — re-check it offline with
+    <span class="kbd">go run ./cmd/verify-audit -dir export</span>. This stub is the proof the
+    letter was issued; the letter carries its stub, like a cheque book keeps its counterfoil.</div>
+</div>
+</body></html>
+{{end}}

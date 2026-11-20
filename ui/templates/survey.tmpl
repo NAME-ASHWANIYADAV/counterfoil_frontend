@@ -1,0 +1,30 @@
+{{define "survey"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>{{$d.Title}}</h1>
+  <span class="crumb">case {{$d.T.CaseID}} · optional — the submission becomes a receipt; the answers travel with it</span></div>
+<main id="main">
+<div class="rcptwrap">
+  <div class="card">
+    <div class="hd stub"><h2>{{$d.T.Title}}</h2><span class="note">step {{$d.T.StepID}}</span></div>
+    <div class="tearline"></div>
+    <div class="bd">
+      <form method="post" action="/survey/{{$d.T.ID}}" class="stack" style="gap:14px;max-width:560px">
+        {{range $d.Qs}}
+        <label class="f">{{.Label}}
+          {{if eq .Kind "select"}}
+          <select name="{{.Key}}"><option>yes</option><option>mostly</option><option>no</option></select>
+          {{else}}
+          <textarea name="{{.Key}}" rows="3" placeholder="in your own words"></textarea>
+          {{end}}
+        </label>
+        {{end}}
+        <div style="display:flex;gap:8px">
+          <button class="btn">Submit — this becomes a receipt</button>
+          <a class="btn ghost" href="{{$d.Back}}">Not now</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</main>
+{{template "foot" .}}{{end}}

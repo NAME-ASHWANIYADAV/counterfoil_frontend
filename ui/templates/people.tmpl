@@ -1,0 +1,27 @@
+{{define "people"}}{{template "head" .}}
+<div class="topbar"><h1>People</h1>
+  <span class="crumb">the synthetic workforce — each profile reads the target systems' own records, live</span></div>
+<main id="main">
+<div class="card tight">
+  <div class="hd"><h2>Employees</h2>
+    <span style="display:flex;gap:10px;align-items:center"><span class="note">{{len .Data}} on record</span>
+    {{if eq .User.Role "hrops"}}<a class="btn sm" href="/onboarding/new">Start onboarding</a>{{end}}</span></div>
+  <table class="t">
+    <tr><th>Name</th><th style="width:110px">ID</th><th>Title</th><th style="width:120px">Location</th><th>Manager</th><th style="width:90px" class="num">Leave days</th><th style="width:190px">Exit</th></tr>
+    {{range .Data}}
+    <tr>
+      <td><a href="/people/{{.E.ID}}"><b>{{.E.Name}}</b></a></td>
+      <td><span class="hash">{{.E.ID}}</span></td>
+      <td>{{.E.Title}}</td>
+      <td class="note">{{.E.Location}}</td>
+      <td class="note">{{if .ManagerName}}{{.ManagerName}}{{else}}—{{end}}</td>
+      <td class="num">{{printf "%.1f" .E.LeaveBalanceDays}}</td>
+      <td>{{if .Case}}
+        <a href="/cases/{{.Case.ID}}"><span class="pill {{if eq (printf "%s" .Case.Status) "open"}}p-running{{else}}p-done{{end}}">{{.Case.ID}} · {{.CaseDone}}/{{.CaseAll}} steps</span></a>
+      {{else}}<span class="note">active — no exit on record</span>{{end}}</td>
+    </tr>
+    {{end}}
+  </table>
+</div>
+</main>
+{{template "foot" .}}{{end}}

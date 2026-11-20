@@ -1,0 +1,47 @@
+{{define "receipt"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>Receipt #{{$d.R.Seq}}</h1>
+  <span class="crumb">one counterfoil, in full — its hash recomputed in front of you on this request</span></div>
+<main id="main">
+<div class="rcptwrap">
+  <div class="card rcptdoc">
+    <div class="hd stub"><h2><span class="mono">{{$d.R.Action}}</span></h2>
+      <span class="note">{{if $d.R.CaseID}}case <a href="{{if eq .User.Role "leaver"}}/myexit{{else}}/cases/{{$d.R.CaseID}}{{end}}">{{$d.R.CaseID}}</a>{{if $d.R.StepID}} · step {{$d.R.StepID}}{{end}}{{else}}platform record{{end}}</span></div>
+    <div class="tearline"></div>
+    <div class="bd">
+      <table class="t facts">
+        <tr><td>Sequence</td><td class="mono">#{{$d.R.Seq}}</td></tr>
+        <tr><td>Recorded</td><td>{{timefmt $d.R.TS}} <span class="note">UTC</span></td></tr>
+        <tr><td>Actor</td><td>{{$d.R.ActorType}}{{if $d.R.ActorID}} <span class="note">· {{$d.R.ActorID}}</span>{{end}}</td></tr>
+        {{if $d.R.Evidence}}<tr><td>Evidence</td><td><span class="ev ev-{{$d.R.Evidence}}">{{$d.R.Evidence}}</span></td></tr>{{end}}
+      </table>
+
+      <div class="hashflow">
+        <div class="hop"><div class="k">links back to</div>
+          {{if $d.HasPrev}}<a class="hash" href="/receipts/{{$d.PrevSeq}}" title="{{$d.R.PrevHash}}">{{short $d.R.PrevHash}}</a>
+          {{else}}<span class="hash" title="{{$d.R.PrevHash}}">{{if $d.R.PrevHash}}{{short $d.R.PrevHash}}{{else}}genesis{{end}}</span>{{end}}</div>
+        <div class="hop arrow">→</div>
+        <div class="hop"><div class="k">hashes to</div>
+          <span class="hash" title="{{$d.R.Hash}}">{{short $d.R.Hash}}</span></div>
+        <div class="hop verdict">
+          {{if $d.Match}}<span class="pill p-done">recomputed just now — it matches</span>
+          {{else}}<span class="pill p-breached">recomputed just now — MISMATCH</span>{{end}}
+        </div>
+      </div>
+      <div class="note" style="margin-top:6px">{{$d.CoverNote}}.</div>
+
+      {{if $d.DataJSON}}
+      <div class="sep"></div>
+      <div class="note" style="margin-bottom:6px">What this receipt records, verbatim:</div>
+      <pre class="rawjson">{{$d.DataJSON}}</pre>
+      {{end}}
+    </div>
+    <div class="bd pager">
+      {{if $d.HasPrev}}<a class="btn sm ghost" href="/receipts/{{$d.PrevSeq}}">← #{{$d.PrevSeq}}</a>{{else}}<span></span>{{end}}
+      <span class="note">no counterfoil, no claim</span>
+      {{if $d.HasNext}}<a class="btn sm ghost" href="/receipts/{{$d.NextSeq}}">#{{$d.NextSeq}} →</a>{{else}}<span></span>{{end}}
+    </div>
+  </div>
+</div>
+</main>
+{{template "foot" .}}{{end}}

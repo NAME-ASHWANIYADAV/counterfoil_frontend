@@ -1,0 +1,150 @@
+{{define "head" -}}
+<!doctype html>
+<html lang="en" class="boot">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{.Title}} · Counterfoil</title>
+<script>/* the arrival plays once per session, not on every page */
+try{if(sessionStorage.cfb)document.documentElement.classList.remove("boot");sessionStorage.cfb=1}catch(e){}</script>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23014693'/%3E%3Cpath d='M10 7h12v18H10z' fill='%23fff'/%3E%3Cg fill='%23014693'%3E%3Ccircle cx='10' cy='10' r='1.6'/%3E%3Ccircle cx='10' cy='16' r='1.6'/%3E%3Ccircle cx='10' cy='22' r='1.6'/%3E%3C/g%3E%3C/svg%3E">
+</head>
+<body>
+<div class="shell">
+<aside class="side">
+  <div class="brand">
+    <div class="mark wm">COUNTER<span class="tear"></span><span class="leaf">FOIL</span></div>
+    <div class="sub">Named humans decide.<br>Agents do the rest.</div>
+  </div>
+  <nav class="nav">
+    {{if eq .User.Role "leaver"}}
+      <a href="/chat" {{if eq .Active "chat"}}class="on"{{end}}><span class="dot"></span>Chat</a>
+      <a href="/myexit" {{if eq .Active "myexit"}}class="on"{{end}}><span class="dot"></span>My exit</a>
+    {{end}}
+    {{if or (eq .User.Role "manager") (eq .User.Role "payroll")}}
+      <a href="/work" {{if eq .Active "work"}}class="on"{{end}}><span class="dot"></span>Your work</a>
+    {{end}}
+    {{if ne .User.Role "leaver"}}
+      <a href="/cases" {{if eq .Active "cases"}}class="on"{{end}}><span class="dot"></span>Cases</a>
+      <a href="/people" {{if eq .Active "people"}}class="on"{{end}}><span class="dot"></span>People</a>
+      <a href="/clocks" {{if eq .Active "clocks"}}class="on"{{end}}><span class="dot"></span>Clocks</a>
+    {{end}}
+    {{if or (eq .User.Role "hrops") (eq .User.Role "payroll") (eq .User.Role "hradmin") (eq .User.Role "auditor")}}
+      <a href="/indoubt" {{if eq .Active "indoubt"}}class="on"{{end}}><span class="dot"></span>In doubt</a>
+    {{end}}
+    {{if ne .User.Role "leaver"}}<div class="navdiv"></div>
+      <a href="/dashboard" {{if eq .Active "dashboard"}}class="on"{{end}}><span class="dot"></span>Dashboard</a>
+    {{end}}
+    {{if or (eq .User.Role "hrops") (eq .User.Role "hradmin")}}
+      <a href="/admin" {{if eq .Active "admin"}}class="on"{{end}}><span class="dot"></span>Controls &amp; drills</a>
+    {{end}}
+    {{if or (eq .User.Role "payroll") (eq .User.Role "hrops") (eq .User.Role "hradmin") (eq .User.Role "auditor")}}
+      <a href="/mandates" {{if eq .Active "mandates"}}class="on"{{end}}><span class="dot"></span>Mandates</a>
+    {{end}}
+    {{if or (eq .User.Role "auditor") (eq .User.Role "hradmin") (eq .User.Role "hrops")}}
+      <a href="/audit" {{if eq .Active "audit"}}class="on"{{end}}><span class="dot"></span>Audit room</a>
+    {{end}}
+    <a href="/doctrine" {{if eq .Active "doctrine"}}class="on"{{end}}><span class="dot"></span>How decisions are made</a>
+  </nav>
+  {{if ne .User.Role "leaver"}}
+  <form class="sidesearch" action="/search" method="get">
+    <input type="search" name="q" placeholder="Search the record" aria-label="Search">
+  </form>
+  {{end}}
+  <div class="stamp">Design-stage prototype on synthetic data and our own stand-in systems — not TBO's mocks. Done means confirmed.</div>
+  <div class="foot">
+    <div class="who">{{.User.Name}}</div>
+    <div class="role">{{.User.Title}}</div>
+    <a href="/logout">Sign out</a>
+  </div>
+</aside>
+<div class="content">
+  {{if .Kill.On}}<div class="killbar">⏸ Kill switch is ON ({{.Kill.Scope}}) — the next action is blocked.
+    <span class="sub">Clocks keep running: pausing agents never extends a legal deadline.</span></div>{{end}}
+  {{if .Flash}}<div class="flash{{if hasPrefix .Flash "REFUSED"}} refuse{{end}}">{{.Flash}}</div>{{end}}
+{{- end}}
+
+{{define "foot" -}}
+<footer class="appfoot">
+  <span class="wm" style="font-size:11px">COUNTER<span class="tear"></span><span class="leaf">FOIL</span></span>
+  <span class="note">demo build · synthetic data</span>
+  <nav><a href="/about">About</a><a href="/doctrine">How it decides</a><a href="/security">Security</a><a href="/privacy">Privacy</a><a href="/credits">Credits</a></nav>
+</footer>
+</div></div>
+<script src="/static/app.js"></script>
+</body></html>
+{{- end}}
+
+{{/* ---------------- the 19-step tracker ---------------- */}}
+{{define "tracker"}}
+<div class="track"><div class="lane">
+  {{range .Steps}}
+  <div class="tstep" title="{{.N}} · {{.Title}}{{if .Note}} — {{.Note}}{{end}}">
+    <div class="bar {{if or (eq .Status "done") (eq .Status "skipped")}}fill{{end}}"></div>
+    {{if .Checked}}<div class="tcheck">✓</div>{{end}}
+    <div class="tnode
+      {{- if .Human}} human{{end}}
+      {{- if eq .Kind "human_input"}} input{{end}}
+      {{- if eq .Status "pending"}} todo{{end}}
+      {{- if eq .Status "running"}} run{{end}}
+      {{- if eq .Status "waiting"}} waiting{{end}}
+      {{- if eq .Status "in_doubt"}} doubt{{end}}"><span>{{.N}}</span></div>
+    <div class="tlab">{{if .Reserved}}<b style="color:var(--orange-deep)">{{.Reserved}}</b><br>{{end}}{{.Status}}</div>
+  </div>
+  {{end}}
+</div></div>
+{{end}}
+
+{{/* ---------------- step table ---------------- */}}
+{{define "steptable"}}
+<table class="t">
+<tr><th style="width:36px">#</th><th>Step</th><th style="width:110px">Status</th><th style="width:120px">Evidence</th><th>Who / note</th></tr>
+{{range .Steps}}
+<tr>
+  <td class="num">{{.N}}</td>
+  <td>{{.Title}} {{if .Reserved}}<span class="pill p-reserved">{{.Reserved}} · reserved</span>{{end}}</td>
+  <td><span class="pill p-{{.Status}}">{{.Status}}</span></td>
+  <td>{{if .Evidence}}<span class="ev ev-{{.Evidence}}">{{.Evidence}}</span>{{else}}<span class="note">—</span>{{end}}</td>
+  <td class="note">{{if .Actor}}{{.Actor}}{{if .Note}} · {{end}}{{end}}{{.Note}}</td>
+</tr>
+{{end}}
+</table>
+{{end}}
+
+{{/* ---------------- clocks ---------------- */}}
+{{define "clocks"}}
+{{if .Clocks}}
+<div class="clockgrid">
+  {{range .Clocks}}
+  <div class="clock {{.O.Status}}">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <b style="font-size:13px">{{.O.Title}}</b>
+      <span class="pill p-{{.O.Status}}">{{.O.Status}}</span>
+    </div>
+    <div class="due">{{fdisplay .O.DueDate}}{{if and (ne .O.Status "closed") (ge .DaysLeft 0)}} <span class="note">({{.DaysLeft}}d)</span>{{end}}</div>
+    <div class="trace">{{.Trace}}</div>
+    <div class="trace">{{.O.Basis}} {{if .O.NeedsLegalConfirmation}}<span class="legal">needs_legal_confirmation</span>{{end}}</div>
+    <div class="trace">Closes only on <b>{{.O.ClosesOnAction}}</b> at evidence <span class="ev ev-{{.O.EvidenceRequired}}">{{.O.EvidenceRequired}}</span>{{if .O.ClosedBy}} — closed by receipt #{{.O.ClosedBy}}{{end}}</div>
+  </div>
+  {{end}}
+</div>
+{{else}}<div class="empty">No clocks yet — they start at acceptance (step 6).</div>{{end}}
+{{end}}
+
+{{/* ---------------- receipts table ---------------- */}}
+{{define "receipts"}}
+<table class="t">
+<tr><th style="width:52px">#</th><th style="width:120px">When</th><th>Action</th><th style="width:84px">Actor</th><th style="width:108px">Evidence</th><th style="width:150px">Hash</th></tr>
+{{range .}}
+<tr>
+  <td class="num"><a class="rlink" href="/receipts/{{.Seq}}">{{.Seq}}</a></td>
+  <td class="note">{{timefmt .TS}}</td>
+  <td><span class="mono">{{.Action}}</span>{{if .StepID}} <span class="note">· {{.StepID}}</span>{{end}}</td>
+  <td class="note">{{.ActorType}}</td>
+  <td>{{if .Evidence}}<span class="ev ev-{{.Evidence}}">{{.Evidence}}</span>{{end}}</td>
+  <td><span class="hash" title="{{.Hash}}">{{short .Hash}}</span></td>
+</tr>
+{{end}}
+</table>
+{{end}}

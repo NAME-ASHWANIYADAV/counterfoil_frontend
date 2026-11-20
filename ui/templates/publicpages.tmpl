@@ -1,0 +1,173 @@
+{{/* ---------------- shared public chrome ---------------- */}}
+{{define "pubtop"}}
+<div class="loginband"><a href="/" style="color:#fff;text-decoration:none"><span class="mark wm">COUNTER<span class="tear"></span><span class="leaf">FOIL</span></span></a>
+  <span class="note">An HR services platform — VoyageHack 4.0 working demo</span></div>
+{{end}}
+
+{{define "pubfoot"}}
+<footer class="pubfoot">
+  <nav>
+    <a href="/">Home</a><a href="/about">About</a><a href="/doctrine">How it decides</a><a href="/security">Security</a><a href="/privacy">Privacy</a><a href="/credits">Credits &amp; team</a>
+  </nav>
+  <div class="fine">Team Init to Win It · VoyageHack 4.0, PS2 · a design-stage prototype on synthetic
+  data and our own stand-in systems — done means confirmed.</div>
+</footer>
+{{end}}
+
+{{/* ---------------- /security ---------------- */}}
+{{define "security"}}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security · Counterfoil</title><meta name="theme-color" content="#014693">
+<link rel="stylesheet" href="/static/app.css"></head>
+<body class="aboutpage">
+{{template "pubtop" .}}
+<section class="ab-band">
+  <div class="ab-wrap">
+    <h1 class="pubh1">Security<span class="enddot"></span></h1>
+    <p class="pubsub">What actually guards this prototype — each item is in the code, most leave receipts,
+    and several exist because an automated security review of our own commits found the gap and we fixed it.</p>
+
+    <h2>The gate, before anything leaves</h2>
+    <ul class="ab-drills">
+      <li><b>Hash-bound mandates.</b> A reserved action dispatches only under a named person's mandate bound
+        to the canonical hash of the exact request. Change one rupee after approval and the gate refuses,
+        with a receipt. Mandates are single-use and expire in 45 minutes.</li>
+      <li><b>Separation of duties.</b> Whoever opened a case cannot decide its reserved approvals, and
+        onboarding intake is a different role from the offer's approver by construction.</li>
+      <li><b>Scope by role.</b> A manager sees their own reports — on People, profiles, clocks and every
+        search result — never the wider workforce or its salaries. Sealed cases stay out of their view.</li>
+      <li><b>Fail closed.</b> The duplicate-hire check treats an unreachable directory as UNKNOWN and routes
+        to a person; absence counts only when the target itself answers 404. A lying "201 Created" can never
+        become Done — read-back decides, and a contradiction goes to a named person.</li>
+    </ul>
+
+    <h2>The record and its signer</h2>
+    <ul class="ab-drills">
+      <li><b>Hash-chained receipts</b>, countersigned by a separate process that alone holds the signing key.
+        The signer remembers what it signed: it refuses to countersign a different history for a sequence it
+        already covered, and refuses to go backwards.</li>
+      <li><b>Out-of-band pinning.</b> The offline verifier trusts only a signer key delivered outside the
+        bundle; a key found inside the bundle is never a pin, and the report says UNPINNED in so many words.</li>
+      <li><b>Loopback by default.</b> All three demo processes bind to 127.0.0.1; the signing endpoint takes a
+        shared token (constant-time compared) for any shared environment.</li>
+    </ul>
+
+    <h2>The application surface</h2>
+    <ul class="ab-drills">
+      <li><b>The model is confined to typed tools.</b> It cannot name a URL, decide an approval or move money;
+        its arguments are validated against declared schemas, its failures are shown as failures, and every
+        call is metered on the chain. The API key lives server-side in the environment and appears in no URL,
+        log, template, receipt or repository.</li>
+      <li><b>Boring web hygiene, verified.</b> Redirect targets are parsed and constrained; the 404 escapes
+        what it reflects; PIN re-entry guards decisions; sessions are random ids in HttpOnly cookies.</li>
+      <li><b>Drills, not claims.</b> Seven canary probes re-test the guards on demand — forged mandate,
+        tampered amount, agent deciding, expired mandate, duplicate intent, lying reply, kill-switch bypass —
+        and every run leaves a receipt an auditor can re-check offline.</li>
+    </ul>
+    <h2>Identity, deliberately without passwords</h2>
+    <ul class="ab-drills">
+      <li><b>No self-registration, by design.</b> An internal HR platform is not a consumer site: accounts
+        are provisioned by HR and IT through the onboarding journey (a warranted, receipted process), and
+        identity belongs to the corporate directory. A register page here would be an attack surface
+        pretending to be a feature.</li>
+      <li><b>No passwords stored, ever.</b> The demo signs in with a persona picker standing in for
+        corporate single sign-on; production is OIDC against the company's identity provider, with
+        re-authentication at each reserved decision carrying the mandate's hash as its nonce. The PIN you
+        type at an approval is the demo stand-in for exactly that re-login.</li>
+    </ul>
+    <p class="note">This is a hackathon prototype: the demo identity provider is a persona picker with PINs,
+    and the stand-in target systems are ours. The production design swaps in OIDC re-authentication and real
+    targets without moving any of the guarantees above.</p>
+  </div>
+</section>
+{{template "pubfoot" .}}
+</body></html>
+{{end}}
+
+{{/* ---------------- /privacy ---------------- */}}
+{{define "privacy"}}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy · Counterfoil</title><meta name="theme-color" content="#014693">
+<link rel="stylesheet" href="/static/app.css"></head>
+<body class="aboutpage">
+{{template "pubtop" .}}
+<section class="ab-band">
+  <div class="ab-wrap">
+    <h1 class="pubh1">Privacy<span class="enddot"></span></h1>
+    <p class="pubsub">Not a policy document — a description of how this prototype actually treats personal
+    text, enforced by its architecture rather than promised by a page.</p>
+
+    <h2>Personal text never enters the receipts</h2>
+    <ul class="ab-drills">
+      <li><b>Chat</b> lives in its own store; the exportable chain carries events, never what anyone typed.</li>
+      <li><b>Survey answers</b> live in a survey store; the receipt carries the field names and a canonical
+        hash that commits to them — enough to prove a submission, nothing to read.</li>
+      <li><b>Task notes</b> are hashed into their receipts the same way.</li>
+      <li><b>POSH and grievance disclosures</b> are routed to the named officer and sealed: the text reaches
+        no model and no receipt; a hash stands in, and the platform never decides these (a reserved rule).</li>
+    </ul>
+
+    <h2>What the model sees</h2>
+    <p>The assistant reads only what its typed tools return about <i>your own</i> case — the rule pack, your
+    steps and clocks, your settlement lines. Staff investigation drafts read a target system's record for one
+    item. Sealed text is out of reach by construction, and every model call is metered on the chain with its
+    purpose.</p>
+
+    <h2>What leaves this machine</h2>
+    <p>In the demo: model calls to the configured AI provider (server-side key, request headers only), and
+    nothing else — fonts, styles and scripts are self-hosted; there is no CDN, no analytics, no tracking of
+    any kind. Every person and record in the demo is synthetic.</p>
+
+    <h2>Who sees what</h2>
+    <p>A leaver sees their own case and its counterfoils. A manager sees their reports. HR operations,
+    payroll, administration and audit see the slices their role entitles them to — and the audit trail of
+    who decided what is itself part of the record.</p>
+  </div>
+</section>
+{{template "pubfoot" .}}
+</body></html>
+{{end}}
+
+{{/* ---------------- /credits ---------------- */}}
+{{define "credits"}}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Credits &amp; team · Counterfoil</title><meta name="theme-color" content="#014693">
+<link rel="stylesheet" href="/static/app.css"></head>
+<body class="aboutpage">
+{{template "pubtop" .}}
+<section class="ab-band">
+  <div class="ab-wrap">
+    <h1 class="pubh1">Credits &amp; team<span class="enddot"></span></h1>
+
+    <h2>Team Init to Win It</h2>
+    <p>Sonal Verma (team lead) · Ashwani Yadav · Arpita · Vaibhav Gupta · Lakshay Bansal —
+    VoyageHack 4.0, problem statement 2: an AI-native HR services platform.</p>
+
+    <h2>AI disclosure</h2>
+    <p>Claude (Claude Code) was used for research, drafting and writing this prototype's code under the
+    team's direction. At runtime, the product's assistant runs on Google Gemini through typed, server-defined
+    tools; with no key configured the product runs whole on rules and says so.</p>
+
+    <h2>Prior art, credited</h2>
+    <p>None of the building blocks is new to the world, and we say so: idempotency keys and intent logs
+    (mycelium-runtime; Anchor, whose protocol write-up we also credit for attributable evidence and the
+    three-valued verdict), request-bound signed approvals (the AP2 protocol; the counter-sign draft),
+    read-back verification (SailPoint IdentityIQ), canary probes (Overpass), statutory deadline traces
+    (Instanter), replay-gated activation (OneDecision), and the governed action flow sketched in TBO's own
+    brief, as in fellow designs TBO-Helm, HireLoop and Karya. <b>What we add is the join.</b></p>
+
+    <h2>Type and design</h2>
+    <p>Montserrat, Open Sans, IBM Plex Mono and IBM Plex Serif, all under the SIL Open Font License 1.1 and
+    self-hosted. The interface follows TBO's public product styling, measured from tbo.com and the
+    TBOHolidays portal; no TBO logo or mark is used. Built with Go's standard library only — no framework,
+    no database, no npm.</p>
+
+    <h2>Honesty notes</h2>
+    <p>Everything on the dashboards is measured from this instance's receipts — nothing is projected. Our
+    design-spike numbers live outside this product and are labelled as spikes. We never claim "exactly
+    once", "tamper-proof", "guaranteed" or "first".</p>
+  </div>
+</section>
+{{template "pubfoot" .}}
+</body></html>
+{{end}}

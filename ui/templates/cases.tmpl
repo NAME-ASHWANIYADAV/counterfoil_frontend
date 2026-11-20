@@ -1,0 +1,28 @@
+{{define "cases"}}{{template "head" .}}
+<div class="topbar"><h1>Cases</h1>
+  <span class="crumb">exceptions surface here; no email chasing</span></div>
+<main id="main" data-live="1">{{template "cases-main" .}}</main>
+{{template "foot" .}}{{end}}
+
+{{define "cases-main"}}
+<div class="card tight">
+  <table class="t">
+    <tr><th>Case</th><th>Employee</th><th style="width:170px">Progress</th><th>Status</th><th>Steps auto</th><th style="width:88px">Clocks open</th><th style="width:76px">In doubt</th><th style="width:80px"></th></tr>
+    {{range .Data}}
+    <tr>
+      <td><b>{{.C.ID}}</b><div class="note">{{.C.Package}} · opened {{timefmt .C.OpenedAt}}</div></td>
+      <td>{{.Emp.Name}}<div class="note">{{.Emp.ID}} · {{.Emp.Title}}</div></td>
+      <td><div class="meter"><span style="width:{{.Pct}}%"></span></div>
+        <div class="note">{{.Done}} of {{.All}} steps</div></td>
+      <td><span class="pill {{if eq .C.Status "open"}}p-running{{else}}p-done{{end}}">{{.C.Status}}</span>
+        {{if .C.BoundLWD}}<div class="note">LWD {{fdisplay .C.BoundLWD}}</div>{{end}}</td>
+      <td>{{.Auto}} <div class="note">done without a person</div></td>
+      <td>{{if gt .Open 0}}<span class="pill p-open">{{.Open}}</span>{{else}}<span class="pill p-closed">0</span>{{end}}</td>
+      <td>{{if gt .InDoubt 0}}<span class="pill p-in_doubt">{{.InDoubt}}</span>{{else}}<span class="note">—</span>{{end}}</td>
+      <td><a class="btn sm ghost" href="/cases/{{.C.ID}}">Open</a></td>
+    </tr>
+    {{else}}<tr><td colspan="6" class="empty">No cases yet. Sign in as Riya Sharma and resign in chat to start the journey.</td></tr>
+    {{end}}
+  </table>
+</div>
+{{end}}

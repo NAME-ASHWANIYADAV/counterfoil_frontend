@@ -1,0 +1,116 @@
+{{define "doctrine"}}{{template "head" .}}
+{{$d := .Data}}
+<div class="topbar"><h1>How Counterfoil decides</h1>
+  <span class="crumb">the rules of the house, read from this instance's own configuration — not a brochure</span></div>
+<main id="main">
+<div class="stack">
+
+  <div class="card">
+    <div class="hd"><h2>The one idea</h2></div>
+    <div class="bd" style="max-width:72ch">
+      <p style="margin-top:0"><b>A reply is a claim; the record is the fact.</b> Every HR action on
+      another team's system runs under a warrant — who asked, under which rule and, for reserved
+      decisions, a named person's signed approval of exactly that request — and a step counts as
+      done only when the target system's own record confirms it. Every state change leaves a
+      counterfoil: a hash-chained, countersigned receipt an auditor can re-check offline.</p>
+      <p style="margin-bottom:0">An agent's message cannot close anything. A success reply cannot.
+      A timeout cannot. The kill switch cannot — pausing agents never extends a legal deadline.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="card" style="flex:1;min-width:0">
+      <div class="hd"><h2>The evidence ladder</h2><span class="note">what a verdict is allowed to rest on</span></div>
+      <div class="bd">
+        <table class="t">
+          <tr><th style="width:120px">Level</th><th>Meaning</th><th style="width:190px">What it may close</th></tr>
+          <tr><td><span class="ev ev-attributed">attributed</span></td>
+            <td>the target's own record carries <b>our</b> reference — proof our request did this</td>
+            <td>anything, money clocks included</td></tr>
+          <tr><td><span class="ev ev-observed">observed</span></td>
+            <td>the end state is right, but cannot be tied to our request</td>
+            <td>convergent state changes (disable, revoke)</td></tr>
+          <tr><td><span class="ev ev-reply_only">reply_only</span></td>
+            <td>only the target's reply claims success — nothing to read back</td>
+            <td class="note">never a money clock; declared and justified per effect</td></tr>
+          <tr><td><span class="ev ev-internal">internal</span></td>
+            <td>the fact lives in our own ledger (a decision, a computation)</td>
+            <td>internal steps</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="flex:1;min-width:0">
+      <div class="hd"><h2>The warrant path</h2><span class="note">every external effect, in order</span></div>
+      <div class="bd">
+        <ol class="warrantpath">
+          <li>Policy gate — reserved list, kill switch, mandate hash check</li>
+          <li>Intent ledger — PENDING, synced to disk before any bytes leave</li>
+          <li>Send once — with <span class="mono">Idempotency-Key</span> and <span class="mono">X-Client-Ref</span></li>
+          <li>Read back the target's own record, by our reference</li>
+          <li>Done at its evidence level — or IN DOUBT, to a named person</li>
+        </ol>
+        <div class="note">A crash between send and commit is reconciled on restart by reading the
+        target, never by resending blindly. A changed request after approval — one rupee added —
+        fails the mandate's hash check and is refused, with a receipt.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card tight">
+    <div class="hd"><h2>Reserved decisions</h2>
+      <span class="note">{{len $d.Reserved}} on this instance — the floor can be added to, never removed</span></div>
+    <table class="t">
+      <tr><th style="width:80px">ID</th><th>Decision</th><th style="width:150px">Guarded action</th>
+        <th style="width:120px">Approver role</th><th style="width:90px"></th></tr>
+      {{range $d.Reserved}}
+      <tr><td><b>{{.ID}}</b></td><td>{{.Title}}</td>
+        <td>{{if .Action}}<span class="mono" style="font-size:11.5px">{{.Action}}</span>{{else}}<span class="note">decision-only</span>{{end}}</td>
+        <td>{{.ApproverRole}}{{if .RouteOnly}} <span class="note">· route only</span>{{end}}</td>
+        <td>{{if .Floor}}<span class="pill p-reserved">floor</span>{{else}}<span class="pill p-pending">added</span>{{end}}</td></tr>
+      {{end}}
+    </table>
+  </div>
+
+  <div class="row">
+    <div class="card tight" style="flex:1.2;min-width:0">
+      <div class="hd"><h2>The rule pack</h2>
+        <span class="note">v{{$d.Rules.Version}} · dated {{$d.Rules.Dated}} · demo fixtures, flagged where legal confirmation is needed</span></div>
+      <table class="t">
+        <tr><th>Rule</th><th>As configured</th><th>Citation</th></tr>
+        <tr><td>Notice period</td><td>{{$d.Rules.Notice.Days}} days{{if $d.Rules.Notice.BuyoutAllowed}}, buyout allowed{{end}}</td>
+          <td class="note">{{$d.Rules.Notice.Cite}}</td></tr>
+        <tr><td>Final wages</td><td>within {{$d.Rules.FinalWages.WorkingDays}} working days of the last working day
+            {{if $d.Rules.FinalWages.NeedsLegalConfirmation}}<span class="legal">needs_legal_confirmation</span>{{end}}</td>
+          <td class="note">{{$d.Rules.FinalWages.Cite}}</td></tr>
+        <tr><td>Gratuity</td><td>from {{printf "%.2f" $d.Rules.Gratuity.MinYears}} years' service, due in {{$d.Rules.Gratuity.DueDays}} days
+            {{if $d.Rules.Gratuity.NeedsLegalConfirmation}}<span class="legal">needs_legal_confirmation</span>{{end}}</td>
+          <td class="note">{{$d.Rules.Gratuity.Cite}}</td></tr>
+        <tr><td>Relieving letter</td><td>within {{$d.Rules.RelievingLetter.Days}} days</td>
+          <td class="note">{{$d.Rules.RelievingLetter.Cite}}</td></tr>
+        <tr><td>Leave encashment</td><td>unused earned leave, gross/30 per day</td>
+          <td class="note">{{$d.Rules.LeaveEncashment.Cite}}</td></tr>
+      </table>
+      <div class="bd note">Working-day arithmetic skips weekends and the sample holiday calendar:
+        {{range $i, $h := $d.Holidays}}{{if $i}} · {{end}}{{$h}}{{end}}.</div>
+    </div>
+    <div class="card" style="flex:1;min-width:0">
+      <div class="hd"><h2>What the admission check refuses</h2>
+        <span class="note">a service line activates only as data, only past these</span></div>
+      <div class="bd">
+        <ul class="refuselist">
+          <li>An approval decided by silence or by timeout — forbidden outright</li>
+          <li>A reserved effect that does not sit under its approval step</li>
+          <li>An external effect with no read-back declaration and no justification</li>
+          <li>An approval that could complete without a named person</li>
+          <li>Dependency cycles between steps</li>
+        </ul>
+        <div class="note">A package that passes gets a certificate hash; <b>two named people</b>
+        activate exactly that hash. The onboarding package ships inactive so activation can be
+        shown live, in the controls room.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+{{template "foot" .}}{{end}}

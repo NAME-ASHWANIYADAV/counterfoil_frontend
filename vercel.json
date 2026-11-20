@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/", "destination": "https://counterfoil-backend.onrender.com/" },
+    { "source": "/:path*", "destination": "https://counterfoil-backend.onrender.com/:path*" }
+  ]
+}
