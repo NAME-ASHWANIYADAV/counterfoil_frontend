@@ -118,7 +118,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	s.sessions[sid] = uid
 	s.mu.Unlock()
-	http.SetCookie(w, &http.Cookie{Name: "cfoil_sid", Value: sid, Path: "/", HttpOnly: true})
+	http.SetCookie(w, &http.Cookie{Name: "cfoil_sid", Value: sid, Path: "/", HttpOnly: true, SameSite: http.SameSiteLaxMode})
 	u, _ := s.app.User(uid)
 	http.Redirect(w, r, homeFor(u), http.StatusSeeOther)
 }
@@ -882,7 +882,9 @@ type dashVM struct {
 }
 
 func (s *Server) dashboardPage(w http.ResponseWriter, r *http.Request) {
-	if _, ok := s.requireUser(w, r); !ok {
+	// The org-wide feed and meters are a back-office view; the roles match
+	// the sidebar that links here.
+	if _, ok := s.requireUser(w, r, "hrops", "hradmin", "auditor"); !ok {
 		return
 	}
 	v := dashVM{Coverage: map[string]int{}}
@@ -1045,6 +1047,16 @@ func (s *Server) adminLie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	svc, on := r.FormValue("svc"), r.FormValue("on")
+	switch svc {
+	case "itsm", "directory", "cards", "payroll":
+	default:
+		s.setFlash(r, "unknown stand-in: "+svc)
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
+		return
+	}
+	if on != "1" {
+		on = "0"
+	}
 	req, _ := http.NewRequest("POST", s.app.Config().MocksURL+"/admin/"+svc+"/lie?on="+on, nil)
 	req.Header.Set("Accept", "application/json")
 	resp, err := (&http.Client{Timeout: 3 * time.Second}).Do(req)
